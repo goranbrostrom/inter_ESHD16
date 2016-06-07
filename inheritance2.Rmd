@@ -1,0 +1,196 @@
+---
+title: "Inheritance 2"
+author: "Göran Broström"
+date: "4 June 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+options(stringsAsFactors = FALSE)
+library(knitr)
+```
+
+## Introduction
+
+This is a continuation and extension of the post [Inheritance](http://capa.ddb.umu.se/rr/jekyll/rstats/2016/06/01/inheritance.html), the Section "A straightforward approach". Read that first, in case you haven't done so already.
+
+### A slightly less straightforward approach
+
+
+```{r readdata, echo = FALSE}
+load("data/per.rda")
+per$event <- !is.na(per$death) & (per$death < 1)
+##kable(head(per[, c("id", "mid", "gmid", "generation", "Sex", "event")]))
+```
+
+
+```{r sizegen,fig.height=4, echo = FALSE}
+##barplot(with(per, table(generation)) / 1000, xlab = "Generation", ylab = "Size in thousands")
+```
+
+
+```{r ourdata, echo = FALSE}
+inherit <- per[per$generation %in% 2:4, ]
+inherit$mid[inherit$generation == 2] <- NA
+inherit$gmid[inherit$generation != 4] <- NA
+gm <- unique(inherit$gmid[!is.na(inherit$gmid)])
+remove <- inherit$generation == 2 & !(inherit$id %in% gm)
+inherit <- inherit[!remove, ]
+```
+
+
+```{r grannies, echo = FALSE}
+library(xtable)
+granm <- data.frame(id = gm,
+                    birthdate = inherit$Birth_date[match(gm, inherit$id)]
+                    )
+noOfKids <- with(inherit[inherit$generation == 3, ], tapply(mid, mid, length))
+noOfDeaths <- with(inherit[inherit$generation == 3, ], tapply(event, mid, sum))
+indx <- match(granm$id, names(noOfKids))
+granm$noOfKids <- noOfKids[indx]
+granm$noOfDeaths <- noOfDeaths[indx]
+##kable(with(granm, table(noOfKids, noOfDeaths)), caption = "Grandmothers: No. of Births (rows), No. of infant ##deaths (columns)")
+```
+
+
+```{r fixmothers, echo = FALSE}
+inherit <- inherit[inherit$generation %in% 3:4, ]
+kids <- inherit[inherit$generation == 4, ]
+moth <- unique(kids$mid)
+remove <- inherit$generation == 3 & !(inherit$id %in% moth)
+inherit <- inherit[!remove, ]
+```
+
+
+
+```{r mommies, echo = FALSE}
+mothers <- data.frame(id = moth,
+                      birthdate = inherit$Birth_date[match(moth, inherit$id)],
+                      mid = inherit$mid[match(moth, inherit$id)]
+)
+noOfKids <- with(inherit[inherit$generation == 4, ], tapply(mid, mid, length))
+noOfDeaths <- with(inherit[inherit$generation == 4, ], tapply(event, mid, sum))
+indx <- match(mothers$id, names(noOfKids))
+mothers$noOfKids <- noOfKids[indx]
+mothers$noOfDeaths <- noOfDeaths[indx]
+##kable(with(mothers, table(noOfKids, noOfDeaths, useNA = "ifany")), caption = "Mothers: No. of births (rows), ##No. of infant deaths (columns)")
+```
+
+
+```{r look, echo = FALSE, message = FALSE}
+library(eha)
+granm$birthdate <- toDate(granm$birthdate)
+mothers$birthdate <- toDate(mothers$birthdate)
+##kable(head(granm))
+##kable(head(mothers))
+```
+
+
+
+```{r putongrandma, echo = FALSE}
+indx <- match(mothers$mid, granm$id)
+mothers$m.noOfKids <- granm$noOfKids[indx]
+mothers$m.noOfDeaths <- granm$noOfDeaths[indx]
+##kable(head(mothers))
+```
+
+### The first analysis
+
+OK, time for analysis. The simplest possible is a two-way table with "mother has infant deaths" vs. "grandmother has infant deaths":
+
+```{r twoway, echo = FALSE}
+mothers$fatality <- mothers$noOfDeaths > 0
+mothers$m.fatality <- mothers$m.noOfDeaths > 0
+(x <- with(mothers, table(fatality, m.fatality)))
+round(prop.table(x, margin = 2), digits = 3) * 100
+fisher.test(x)
+```
+
+This shows clearly that if mother has at least one fatality, then her daughter has an increased probability (from 36 to 40 per cent) of at least one fatality. That difference is statistically significant, with a *p*-value of *0.12 per cent*. 
+
+This is where we left off in the previous post.
+
+### Second analysis
+
+We need to refine the analysis: Need to remove grandmothers with only one child (the mother), somehow handle the fact that mother may have many siblings, see this table.
+
+```{r tablegrand}
+##mothers <- mothers[mothers$fatality != mothers$m.fatality, ] ## OHOJ!! No good
+## Try 
+mothers <- mothers[mothers$m.noOfKids >= 2, ]
+table(table(mothers$mid))
+```
+
+First, let us repeat Fisher's exact test with the modified data frame.
+
+```{r repfis}
+(x <- with(mothers, table(fatality, m.fatality)))
+round(prop.table(x, margin = 2), digits = 3) * 100
+fisher.test(x)
+```
+
+Almost no difference. 
+
+We put on some covariates on the data frame *mothers*. We pick them from the data frame *per*. 
+
+```{r lookatthem}
+##head(mothers)
+##head(per)
+indx <- match(mothers$id, per$id)
+mothers$birthdate <- per$Birth_date[indx] - 1850
+indx <- match(mothers$mid, per$id)
+mothers$m.birthdate <- per$Birth_date[indx] - 1850
+##head(mothers)
+```
+
+And including the birthdates as explanatory variables.
+
+```{r bernoulli}
+fit0 <- glm(fatality ~ m.fatality, data = mothers, family = poisson)
+summary(fit0)
+fit1 <- glm(fatality ~ m.fatality + I(m.birthdate / 100), data = mothers, family = poisson)
+summary(fit1)
+##fit2 <- glm(fatality ~ I(log(m.fatality + 0.5)) + m.birthdate, data = mothers, family = binomial)
+##summary(fit2)
+##summary(fit1)
+```
+
+With a mixed effects model:
+
+```{r meff}
+library(glmmML)
+fit <- glmmML(fatality ~ m.fatality + m.birthdate, cluster = mid, data = mothers, family = poisson)
+summary(fit)
+```
+
+### Modified response
+
+```{r inclbirs}
+response <- cbind(mothers$noOfDeaths , mothers$noOfKids - mothers$noOfDeaths)
+fit <- glm(response ~ I(m.noOfDeaths / m.noOfKids) * (birthdate + m.birthdate)
+           , family = binomial, data = mothers)
+drop1(fit, test = "Chisq")
+```
+
+### Modified model
+
+A Poisson model.
+
+```{r poissonmod}
+mothers$m.noOfDeaths <- cut(mothers$m.noOfDeaths, c(-1, 0.5, 1.5, 12), labels = c("0", "1", "2+"))
+fit0 <- glm(noOfDeaths ~ offset(log(noOfKids)) + m.noOfDeaths + m.noOfKids, family = poisson, data = mothers[mothers$m.birthdate < -10, ])
+drop1(fit0, test = "Chisq")
+fit1 <- glm(noOfDeaths ~ offset(log(noOfKids)) + m.noOfDeaths + m.noOfKids, family = poisson, data = mothers[mothers$m.birthdate > -10, ])
+drop1(fit1, test = "Chisq")
+summary(fit1)
+summary(fit0)
+```
+
+## Conclusion
+
+Let's save the mothers for future use
+
+```{r save}
+save(mothers, file = "data/mothers.rda")
+```
