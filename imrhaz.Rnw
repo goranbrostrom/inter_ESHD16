@@ -1,0 +1,180 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{url}
+
+\bibliographystyle{apa}
+
+\title{An IMR hazards approach to the problem of intergenerational transfer of infant mortality risks}
+
+\author{Göran Broström}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+When studying the infant mortality of women (mothers), the time scale used is woman's age, and the times under risk are intervals starting with the age of a child birth and ending with its death, or one year after the birth, whichever comes first.
+\end{abstract}
+
+\section{Introduction}
+
+The idea emanates from a suggestion by \citet{dpm16}. They consider ``being
+at risk for an infant death'' as follows:
+
+\begin{quote}
+ \emph{The woman enters the risk set at the dates of each offspring birth and is
+ followed for 12 months (365 days), wherein the failure event is specified
+ at the date of infant death. The failure event did not occur if the infant
+ is still alive at the end of the interval. This is repeated per subject
+ for each (additional) birth.} 
+ 
+ \ldots
+ 
+ \emph{In order to account for multiple births that fall within the same 12
+ months analysis time, we will include three time-varying dummy variables
+ related to the subject’s fertility, as well as her age:} 
+ \begin{enumerate}
+\item[1)] Previous child alive \& $ < 12$ months old
+\item[2)] Mother pregnant with next child
+\item[3)] Younger sibling present
+\item[4)] Age
+  \end{enumerate}
+
+\end{quote}  
+
+Regarding 1) -- 3) above, I leave them out: Item
+2) is plain wrong, and items 1) and 3) are of minor importance. Item 4) is
+taken care of by using \emph{mother's age} 
+as the basic time scale in the point process approach. 
+
+<<setup, include = FALSE>>=
+library(knitr)
+library(xtable)
+opts_chunk$set(cache=TRUE, echo=TRUE, message=FALSE)##$
+options(show.signif.stars = FALSE)
+@
+
+\section{The setup}
+
+We follow the lines given above \citep{dpm16}, adding that an interval is
+closed before ``length one'' in case of an infant death, in which case the
+interval (risk time) ends at the date of the death. I have data set for
+the analysis of birth intervals lying around, and after some simple changes
+it looks like this.
+
+<<r lookslikethis, results = 'asis'>>=
+load("data/infmor.rda")
+print(xtable(head(infmor[infmor$lopnr > 1, 
+                         c("id", "birthdate", "sex",
+                             "enter", "ch_exit", 
+                           "ch_event", "lopnr")], 8), digits = 3), 
+      row.names = FALSE)
+@ 
+
+We have removed the first birth interval, starting at marriage ({\tt lopnr = 1}). We can graphically illustrate the IMR history of the mother with {\tt id = 55}, see Figure~1.
+
+<<r figure, fig.cap="Mother 55. Exposure intervals and one event.", fig.height = 4, echo = FALSE>>=
+enter <- infmor$enter[infmor$id == 55 & infmor$lopnr > 1]
+exit <- infmor$ch_exit[infmor$id == 55 & infmor$lopnr > 1]
+event <- infmor$ch_event[infmor$id == 55 & infmor$lopnr > 1]
+plot(c(enter[1], exit[1]), c(1, 1), col = "blue", ylab = "Risk set No",
+     xlim = c(20, 40), ylim = c(0, 6), type = "l", xlab = "Age")
+n <- length(enter)
+for (i in 2:n){
+    lines(c(enter[i], exit[i]), c(i, i), col = "blue")
+    if (event[i]){
+        points(exit[i], i, col = "red")
+    }
+}
+@
+The second interval is very short, in fact of zero length, because the
+infand died on the day of birth.
+
+In order to get a feeling for the intensity of the IMR process, we fit a
+Cox regression model with no covariates and plot the observed Nelson-Aalen
+estimator, see Figure~2. 
+
+<<r plotit, fig.cap = "Graphical test of constant hazard function.", fig.height = 4, echo = FALSE>>=
+library(eha)
+infmor <- age.window(infmor, c(20, 50), 
+                     surv = c("enter", "ch_exit", "ch_event"))
+fit <- coxreg(Surv(enter - 19.99, ch_exit - 19.99, ch_event) ~ 1, 
+              data = infmor)
+fit2 <- phreg(Surv(enter - 19.99, ch_exit - 19.99, ch_event) ~ 1, 
+              data = infmor, dist = "pch")
+check.dist(fit, fit2)
+@ 
+
+The fit to a constant hazard function (exponential distribution of
+interarrival times) is close (Figure~2), if not perfect. It is close enough for using
+the approximation that the number of fatalities of a mother is Poisson
+distributed with parameter proportional to the total exposure time for
+her. 
+
+\section{Extracting the necessary information}
+
+For each mother, we calculate the total time at risk (TTR):
+
+<<r ttr>>=
+infmor <- infmor[infmor$lopnr > 1, ]
+tt <- infmor$ch_exit - infmor$enter
+ttr <- tapply(tt, infmor$id, sum)
+ttr[1:5]
+@
+
+If the exact death age (before age one) of an infant is unavailable, it is fairly safe to approcimate it with some small number, e.g., $0.25$ (the mean death age for those who die in infancy in this data set).
+
+\section{Application}
+
+We open our "intergenerational" file and try to put on exposures on the mothers.
+
+<<r puton>>=
+load("data/mothers.rda")
+indx <- match(mothers$id, names(ttr))
+mothers$exposure <- as.numeric(ttr[indx])
+summary(mothers$exposure)
+missed <- which(is.na(mothers$exposure))
+antna <- length(missed)
+table(is.na(mothers$exposure))
+@
+
+So, \Sexpr{antna} mothers did not get an exposure this way. For them we use the approximation suggested above.
+
+<<r approxabove>>=
+
+mothers$exposure[missed] <- with(mothers[missed, ], 
+                                 noOfKids - 0.75 * noOfDeaths)
+summary(mothers$exposure)
+@
+
+An analysis with the "Poisson" model
+
+<<anal, results = 'asis'>>=
+fit <- glm(noOfDeaths ~ offset(log(exposure)) + m.noOfDeaths + 
+               m.noOfKids + birthdate, data = mothers,
+           family = poisson)
+xtable(drop1(fit, test = "Chisq"))
+@
+
+From this table we see that all variables are highly statistically significant (these $p$-values are from likelihood ratio tests, the only reliable $p$-values in nonlinear models).
+
+<<tabba, results = 'asis'>>=
+xtable(summary(fit)$coef[, 1:3], digits = 4)
+@
+
+And here we see the estimated effects: The variable {\tt m.noOfDeaths} is categorized into three caegories, 0 (reference), 1, and 2+. Obviously we need grandmother to have two deaths or more in order to see a strong effect on her daughter's infant mortality. 
+
+\section{Final remarks}
+
+This is just an example of how a statistical analysis might be organized around our research question. There are several important issues left out here: (1) There are many sisters (mothers with a common grandmother) in the data set. That would call for a \emph{mixed-effects Poisson regression model}. (2) This approach does not allow for \emph{time-varying covariates}. If wanted (I doubt it), you can run the Cox regression type of analysis shown above with covariates. (3) How should the intergenerational effect \emph{really} be modeled, and what properties should this model have? One basic property is \emph{invariance wrt changing the overall level of infant mortality}. In my first simple approach, this property does not hold (odds ratio vs. risk ratio).
+
+The analyses were performed within the \emph{RStudio} and \emph{R}
+environments \citep{R, rstudio, knitr}, and the survival analysis package \emph{eha}
+\citep{eha, ehar12}. Development is exposed on \url{https://github.com/goranbrostrom/fert_ESHD16}. 
+
+\bibliography{/home/gb/bib/cluster.bib}
+
+\end{document}
