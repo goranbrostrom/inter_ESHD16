@@ -1,0 +1,27 @@
+---
+title: "A model for intergenerational transmissions in infant mortality"
+author: "Göran Broström"
+date: "August 10, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The data
+
+There are data on births and infant deaths for mothers and their grandmothers. More specifically, we have, for each mother, the following information: 
+
+* n: Number of births
+* $T_1, \ldots, T_n$: Life lengths of the born kids. Censored at the age of one year, numbered according to birth order.
+* $D_1, \dots, D_n$: Indicators of $T_i < 1, \; i = 1, \ldots, n$
+* $Z$: The number infant deaths facing the corresponding grandmother.
+* $\mathbf{x}$: A vector of covariates.
+
+The explanatory variable $Z$ is of primary interest. And since we are interested of its effect on "infant mortality", it is natural to restrict attention to $D_1, \ldots, D_n$ as response. If we further assume that, given the mother, $T_1, \ldots, T_n$ are independent, identically distributed (iid) random variables with survivor function $S$, then we have that $D_1, \ldots, D_n$ are iid Bernoulli random variables with
+
+$$ 
+P(D_i = 1) = P(T_i >= 1) = S(1), \quad i = 1, \ldots, n.
+$$
+
