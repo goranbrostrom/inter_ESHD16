@@ -92,7 +92,7 @@ But, whatever our choice is, I recommend employing the simple model as a sanity 
 I exemplify with the data from Skellefteå. It looks like this:
 
 ```{r datamoth, echo = FALSE}
-load("data/mothersrda")
+load("data/mothers.rda")
 head(mothers)
 ```
 
