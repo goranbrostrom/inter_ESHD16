@@ -159,7 +159,7 @@ summary(fit1)
 With a mixed effects model:
 
 ```{r meff}
-library(glmmML)
+library(eha)
 fit <- glmmML(fatality ~ m.fatality + m.birthdate, cluster = mid, data = mothers, family = poisson)
 summary(fit)
 ```
