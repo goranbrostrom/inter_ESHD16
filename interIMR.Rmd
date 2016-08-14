@@ -1,0 +1,60 @@
+---
+title: "Intergenerational IMR"
+author: "Göran Broström"
+date: "June 22, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reading data
+
+```{r getdta}
+library(haven)
+ef <- read_dta("Episodes_file.dta")
+(bef <- NROW(ef))
+sum(ef$GrandmotherID == -1)
+sum(ef$GrandmotherID == 0)
+ef$N_births <- as.factor(ef$N_births)
+is.na(ef$GrandmotherID) <- ef$GrandmotherID < 1
+summary(ef[, c("Mother_birthdate", "Grandmother_birthdate", "N_births")])
+ef <- ef[!(is.na(ef$Mother_birthdate) | is.na(ef$GrandmotherID)), ]
+(aft <- NROW(ef))
+```
+
+So there are `r bef - aft` observations deleted.
+
+### A table of multiple births.
+
+```{r tabmul}
+(x <- with(ef, table(N_births)))
+(y <- round(prop.table(x) * 100, 2))
+```
+
+### Drop some cases
+
+```{r dropsomecases}
+ef <- ef[with(ef, N_births == "1"), ]
+ef$N_births <- NULL
+ef$Motheragebirth <- with(ef, (Child_birthdate - Mother_birthdate) / 365.2425)
+outsideRange <- ef$Motheragebirth < 15 | ef$Motheragebirth > 50
+badMother <- unique(ef$MotherID[outsideRange])
+bef <- NROW(ef)
+ef <- ef[!(ef$MotherID %in% badMother), ]
+aft <- NROW(ef)
+```
+So we dropped `r bef - aft` cases due to "bad mothers".
+
+I skip the *grandmother stuff* since it seems to result in nothing. But remove cases with unknown sex:
+
+```{r unknownsex}
+bef <- NROW(ef)
+ef <- ef[ef$Child_sex != "Unknown", ]
+ef$child_sex <- factor(ef$Child_sex)
+aft <- NROW(ef)
+```
+
+So we removed `r bef - aft` cases.
+
