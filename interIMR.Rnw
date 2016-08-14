@@ -1,0 +1,239 @@
+\documentclass[]{article}
+
+\usepackage[utf8]{inputenc}
+\title{Intergenerational IMR}
+\author{Göran Broström}
+\date{June 22, 2016}
+
+\usepackage{endfloat}
+
+\begin{document}
+
+\maketitle
+
+<<setup, include = FALSE>>=
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.height = 4)
+@ 
+
+
+\section{Reading data}
+
+<<readdata>>=
+library(xtable)
+library(haven)
+ef <- as.data.frame(read_dta("Episodes_file.dta")) 
+# NOTE!! as.data.frame necessary; must talk to Hadley.
+bef <- NROW(ef)
+sum(ef$GrandmotherID == -1)
+sum(ef$GrandmotherID == 0)
+ef$N_births <- as.factor(ef$N_births)
+is.na(ef$GrandmotherID) <- ef$GrandmotherID < 1
+ef$Infant_death <- as.logical(ef$Infant_death)
+ef <- ef[!(is.na(ef$Mother_birthdate) | 
+             is.na(ef$GrandmotherID)), ]
+aft <- NROW(ef)
+@
+
+So there are \Sexpr{bef - aft} observations deleted.
+
+<<tabla, results = 'asis'>>=
+xtable(summary(ef[, c("Mother_birthdate", "Grandmother_birthdate", 
+                      "N_births", "Infant_death")]), 
+       caption = "Summary of some key variables.", 
+       label = "tab:tabla")
+@
+For a summary of some key variables, see Table~\ref{tab:tabla}.
+
+Now, while the underscore character is perfectly valid in variable names in {\bf R}, it is slightly inconvenient to use if you want to produce reports in pdf format using {\tt knitr} and {\tt pdflatex} (as I do), so I replace the underscore symbol with a period (".") in all variable names. The R function {\tt gsub} comes in handy:
+
+<<rename>>=
+##names(ef) <- gsub("_", "\\.", names(ef))
+@
+
+The double backslash is there to escape the dot and the backslash character itself, since both have special meanings in \emph{regular expressions}.
+
+
+\subsection{A table of multiple births}
+
+<<tabmul, results = 'asis'>>=
+library(xtable)
+x <- with(ef, table(N_births))
+y <- round(prop.table(x) * 100, 2)
+xtable(y, caption = "Relative frequencies (per cent).")
+@
+
+
+\subsection{Drop some cases}
+
+<<dropsomecases>>= 
+ef <- ef[with(ef, N_births == "1"), ]
+ef$N.births <- NULL
+ef$Motheragebirth <- 
+  with(ef, as.numeric((Child_birthdate - Mother_birthdate) / 365.2425))
+outsideRange <- ef$Motheragebirth < 15 | ef$Motheragebirth > 50
+badMother <- unique(ef$MotherID[outsideRange])
+bef <- NROW(ef)
+ef <- ef[!(ef$MotherID %in% badMother), ]
+aft <- NROW(ef)
+@
+
+So we dropped \Sexpr{bef - aft} cases due to "bad mothers".
+
+I skip the \emph{grandmother stuff} since it seems to result in nothing. But remove cases with unknown sex and grandmothers with only one birth:
+
+<<unknownsex>>= 
+bef <- NROW(ef)
+ef <- ef[ef$Child_sex != "Unknown", ]
+ef <- ef[ef$G0_Births > 1.5, ]
+ef$Child_sex <- factor(ef$Child_sex)
+aft <- NROW(ef)
+@
+
+So we removed \Sexpr{bef - aft} cases.
+
+\section{Analysis}
+
+Fist we need to set up the respone variable, \emph{mother's age at child birth}, \emph{left truncation} and \emph{right censoring}.
+
+<<setupdata>>=
+ef$G0_InfD_cat <- cut(ef$G0_InfD, c(-1, 0.5, 1.5, 2.5, 100), 
+                      labels = c("0", "1", "2", "3+"))
+ef$enter <- as.numeric((ef$Child_birthdate - ef$Mother_birthdate) 
+                         / 365.2425)
+ef$exit <- as.numeric((ef$date2 - ef$Mother_birthdate) / 365.2425)
+ef$event <- !is.na(ef$Infant_death) 
+@
+
+\subsection{Some plots}
+
+A plot of cumulative hazards ("Nelson-Aalen plots") by granny's number of infant deaths is shown in Figure~\ref{fig:firstgraph}.
+
+<<firstgraph, fig.cap = "Cumulative hazards by grandmother's number of infant deaths.">>=
+library(eha)
+fit <- coxph(Surv(enter, exit, event) ~ strata(G0_InfD_cat), 
+             data = ef)
+plot(survfit(fit), col = 1:4, lty = 1:4, xlab = "Mother's age.", 
+     ylab = "Cumulative hazards", xlim = c(15, 50), 
+     fun = "cumhaz")
+text(30, 0.8, "1", col = "red")
+text(30, 1.7, "2", col = "green")
+text(33, 2.3, "0")
+text(33, 3.4, "3+", col = "blue")
+abline(h = 0)
+@
+
+
+This looks quite strange (in the ages 15--20), an investigation is needed. OK, let's do that. My guess is that mothers in ages 15--17 are (i) very few, and (ii) have an extreme amount of infant deaths. We make an age window:
+
+<<agewindow, results = 'asis'>>=
+ef0 <- age.window(ef, c(15, 19))
+fit0 <- coxph(Surv(enter, exit, event) ~ 1, data = ef0)
+y <- summary(survfit(fit0))
+print(xtable(with(y, cbind(time, n.risk, n.event)), digits = c(0, 3, 0, 0)))
+@
+
+Yes, this was very extreme: The first risk set consists of one mother and her baby died, which explains the spike of size one at age 15.8. Similar phenomena will occur in subgroups of the data at low ages. Therefore, I will restrict attention to ages 17--50, see Figure~\ref{fig:restrictattention}.
+
+<<restrictattention, fig.cap = "Cumulative hazards by grandmother's number of infant deaths, restricted data.">>=
+age.win <- c(15, 50) # Note this!!!!!!!!!! Used everywhere; change here.
+ef <- age.window(ef, age.win)
+fit <- coxph(Surv(enter, exit, event) ~ strata(G0_InfD_cat), 
+             data = ef)
+plot(survfit(fit), col = 1:4, lty = 1:4, xlab = "Mother's age.", 
+     ylab = "Cumulative hazards", xlim = age.win, fun = "cumhaz")
+text(30, 0.8, "1", col = "red")
+text(30, 1.7, "2", col = "green")
+text(33, 0.9, "0")
+text(33, 2.3, "3+", col = "blue")
+abline(h = 0)
+@
+
+A \emph{clear non-proportionality}: The action is taking place in the low ages (before age 25). One fatality by grandmother means nothing, two have a small impact, while three or more is really bad.
+
+Now for the sex difference, see Figure~\ref{fig:secondgraph} .
+<<secondgraph, fig.cap = "Cumulative hazards by sex.">>=
+fit <- coxph(Surv(enter, exit, event) ~ strata(Child_sex), 
+             data = ef)
+plot(survfit(fit), col = 1:2, lty = 1:2, xlab = "Mother's age.", 
+     ylab = "Cumulative hazards", xlim = age.win, fun = "cumhaz")
+abline(h = 0)
+text(35, 1, "Girls")
+text(35, 2.4, "Boys", col = "red")
+@
+
+\subsection{Cox regression}
+
+For an ordinary Cox regression, see Table~\ref{tab:coxreg1}. Note its layout of $p$-values: Only \emph{variables} have (likelihood ratio) $p$-values attached to them, \emph{not levels}! This is what our tables should look like. Unfortunately most software (including {\bf R}!) give a standard output like in Table~\ref{tab:frailty}, and you will have to run many LR tests and rewrite the table in the form of Table~\ref{tab:coxreg1}. This could be automated in the standard software, but it is not done. I suspect that the reason is that programs would run much slower, and speed is a marketing argument. In {\bf R} you have the functions {\tt drop1} and {\tt anova}, that performs all LR tests in one stroke. It should be reularly used, at least before publication.
+
+There are two things going on here.
+
+\begin{description}
+\item[Categorical variables:] A categorical variable is internally represented by a number of indicator ("dummy") variables, that are highly linearly dependent (each person can only be in one category). The level-$p$-values will therefore be highly optimistic, and they need to be deflated by a factor of the size equal to the number of levels. Not acknowledging that is similar to run several pairwise $t$-tests instead of an analysis of variance (ANOVA). And we should bother about level $p$-values \emph{only} after the overall $p$-value indicates statistical significance. Better still, care about \emph{effect sizes} in the first place.
+
+\item[The Hauck-Donner effect:] Categorical variables or not, the Wald $p$-values ahe very risky in \emph{nonlinear models} (only). This phenomenon is called the \emph{Hauck-Donner effect}, after the names of the authors of a sadly little known paper. For a reference, google! (I will give it in the updated version of this paper!)
+
+\end{description}
+
+<<coxreg1, results = 'asis'>>=
+ef$Child_birthyear <- as.numeric(ef$Child_birthdate) / 
+  365.2425 + 100
+fit <- coxreg(Surv(enter, exit, event) ~  G0_InfD_cat + G0_Births + 
+                Child_sex + Birth_order + Child_birthyear, 
+              data = ef)
+source("uj.R")
+dr <- drop1(fit, test = "Chisq")
+uj(fit, dr = dr, caption = "Cox regression.", digits = 4, 
+    label = "tab:coxreg1")
+
+@
+
+And we should run a stratified analysis because of the suspected non-proportionality. See Figure~\ref{fig:coxreg2}.
+
+<<coxreg2, fig.cap = "Cumulative hazards by grandmother's number of infant deaths, adjusted for covariates.", fig.height = 6>>=
+fit2 <- coxph(Surv(enter, exit, event) ~  strata(G0_InfD_cat) + G0_Births + 
+                Child_sex + Birth_order + Child_birthyear, 
+              data = ef)
+plot(survfit(fit2), col = 1:4, lty = 1:4, xlab = "Mother's age", 
+     ylab = "Cumulative hazards", xlim = c(17, 50), fun = "cumhaz")
+text(30, 0.8, "1", col = "red")
+text(30, 1.7, "2", col = "green")
+text(33, 0.9, "0")
+text(33, 2.3, "3+", col = "blue")
+abline(h = 0)
+@
+
+With frailty, see Table~\ref{tab:frailty}. The estimated random effects are shown in Figure~\ref{fig:ranef}.
+
+<<frailty0, results= 'asis'>>=
+library(coxme)
+x <- system.time(fit <- coxme(Surv(enter, exit, event) ~ G0_InfD_cat + 
+                           G0_Births + Child_sex + Birth_order + 
+                           Child_birthyear + 
+                          (1 | MotherID), data = ef))
+@
+
+As you can see, the elapsed total time for the analysis is around \Sexpr{round(x[3])}  seconds.
+
+<<frailty, results = 'asis'>>=
+coef <- fixef(fit)
+sde <- sqrt(diag(vcov(fit)))
+pva <- 2 * (1 - pnorm(abs(coef / sde)))
+res.me <- cbind(coef, exp(coef), sde, pva)
+colnames(res.me) <- c("Coef", "Exp(coef)", "S.E.", "Wald p")
+xtable(res.me, digits = 4, 
+       caption = "Mixed effects model, the fixed effects coefficients.", 
+       label = "tab:frailty")
+@
+
+<<ranef, fig.cap = "The (sorted) random effects from the mixed effexts Cox regression.", fig.height = 6>>=
+plot(sort(ranef(fit)[[1]]), type = "l", col = "blue", 
+     ylab = "Random effects", xlab = "Mother.", lwd = 2)
+abline(h = 0)
+abline(h = 1, lty = 3)
+@
+
+The random effects are directly interpretable in a Cox regression. For instance, a value of 1 (one) represents a relative risk of $\exp(1) = 2.718$. See Figure~\ref{fig:ranef}: A few mother's have that relative risk or higher.
+
+\subsection{}
+
+\end{document}
