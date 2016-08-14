@@ -8,11 +8,19 @@ author: "Göran Broström" date: "August 10, 2016" output: html_document ---
 There are data on births and infant deaths for mothers and their grandmothers.
 More specifically, we have, for each mother, the following information:
 
-* n: Number of births * $T_1, \ldots, T_n$: Life lengths of the born kids.
-Censored at the age of one year, numbered according to birth order. * $D_1,
-\dots, D_n$: Indicators of $T_j < 1, \; j = 1, \ldots, n$ * $Z$: The number
-infant deaths facing the corresponding grandmother. * $n_Z$: Grandmother's
-number of births. * $\mathbf{x}$: A vector of covariates.
+* n: Number of births 
+
+* $B_1, \ldots, B_n$: Age of mother at child births.
+
+* $T_1, \ldots, T_n$: Life lengths of the born kids. Censored at the age of one year, numbered according to birth order. 
+
+* $D_1, \dots, D_n$: Indicators of $T_j < 1, \; j = 1, \ldots, n$. 
+
+* $Z$: The number infant deaths facing the corresponding grandmother. 
+
+* $n_Z$: Grandmother's number of births. 
+
+* $\mathbf{x}$: A vector of covariates.
 
 The explanatory variable $(Z, n_Z)$ is of primary interest. And since we are
 interested of its effect on "infant mortality", it is natural to restrict
@@ -89,11 +97,10 @@ But, whatever our choice is, I recommend employing the simple model as a sanity 
 
 # Application
 
-I exemplify with the data from Skellefteå. It looks like this:
+I exemplify with a subset of the data from Skellefteå. It looks like this:
 
 ```{r datamoth, echo = FALSE}
-load("data/mothers.rda")
-head(mothers)
+
 ```
 
 ## The binary model
