@@ -1,9 +1,9 @@
-\documentclass[]{article}
+\documentclass[11pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \title{Intergenerational IMR}
 \author{Göran Broström}
-\date{June 22, 2016}
+\date{August 14, 2016}
 
 \usepackage{endfloat}
 
@@ -12,7 +12,7 @@
 \maketitle
 
 <<setup, include = FALSE>>=
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.height = 4)
+knitr::opts_chunk$set(echo = FALSE, cache = FALSE, message = FALSE, fig.height = 4)
 @ 
 
 
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.height = 4)
 <<readdata>>=
 library(xtable)
 library(haven)
-ef <- as.data.frame(read_dta("Episodes_file.dta")) 
+ef <- as.data.frame(read_dta("data/Episodes_file.dta")) 
 # NOTE!! as.data.frame necessary; must talk to Hadley.
 bef <- NROW(ef)
 sum(ef$GrandmotherID == -1)
@@ -135,7 +135,7 @@ print(xtable(with(y, cbind(time, n.risk, n.event)), digits = c(0, 3, 0, 0)))
 Yes, this was very extreme: The first risk set consists of one mother and her baby died, which explains the spike of size one at age 15.8. Similar phenomena will occur in subgroups of the data at low ages. Therefore, I will restrict attention to ages 17--50, see Figure~\ref{fig:restrictattention}.
 
 <<restrictattention, fig.cap = "Cumulative hazards by grandmother's number of infant deaths, restricted data.">>=
-age.win <- c(15, 50) # Note this!!!!!!!!!! Used everywhere; change here.
+age.win <- c(17, 50) # Note this!!!!!!!!!! Used everywhere; change here.
 ef <- age.window(ef, age.win)
 fit <- coxph(Surv(enter, exit, event) ~ strata(G0_InfD_cat), 
              data = ef)
@@ -180,7 +180,7 @@ ef$Child_birthyear <- as.numeric(ef$Child_birthdate) /
 fit <- coxreg(Surv(enter, exit, event) ~  G0_InfD_cat + G0_Births + 
                 Child_sex + Birth_order + Child_birthyear, 
               data = ef)
-source("uj.R")
+source("R/uj.R")
 dr <- drop1(fit, test = "Chisq")
 uj(fit, dr = dr, caption = "Cox regression.", digits = 4, 
     label = "tab:coxreg1")
@@ -225,11 +225,11 @@ xtable(res.me, digits = 4,
        label = "tab:frailty")
 @
 
-<<ranef, fig.cap = "The (sorted) random effects from the mixed effexts Cox regression.", fig.height = 6>>=
-plot(sort(ranef(fit)[[1]]), type = "l", col = "blue", 
+<<ranef, fig.cap = "The (sorted) random effects (exponentiated) from the mixed effexts Cox regression.", fig.height = 6>>=
+plot(exp(sort(ranef(fit)[[1]])), type = "l", col = "blue", 
      ylab = "Random effects", xlab = "Mother.", lwd = 2)
-abline(h = 0)
-abline(h = 1, lty = 3)
+abline(h = 1)
+abline(h = exp(1), lty = 3)
 @
 
 The random effects are directly interpretable in a Cox regression. For instance, a value of 1 (one) represents a relative risk of $\exp(1) = 2.718$. See Figure~\ref{fig:ranef}: A few mother's have that relative risk or higher.
