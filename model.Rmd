@@ -2,11 +2,12 @@
 title: "Models for intergenerational transmissions in infant mortality"
 author: "Göran Broström"
 date: "August 15, 2016"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(echo = TRUE) 
+options(show.signif.stars = FALSE, digits = 5)
 ```
 
 # The data
@@ -22,7 +23,7 @@ More specifically, we have, for each mother, the following information:
 
 * $D_1, \dots, D_n$: Indicators of $T_j < 1, \; j = 1, \ldots, n$. 
 
-* $Z$: The number infant deaths facing the corresponding grandmother. 
+* $Z$: The number of infant deaths facing the corresponding grandmother. 
 
 * $n_Z$: Grandmother's number of births. 
 
@@ -39,7 +40,7 @@ If we assume that, given the mother, $T_1, \ldots, T_n$ are independent random
 variables with survivor function $S_j$, then we have that $D_1, \ldots, D_n$ are
 independent Bernoulli random variables with
 
-$$ P(D_j = 1) = P(T_j >= 1) = S_j(1), \quad j = 1, \ldots, n. $$
+$$ P(D_j = 1) = P(T_j < 1) = 1 - S_j(1), \quad j = 1, \ldots, n. $$
 
 Assuming that the relation between these survivor functions follow a
 *proportional hazards* model, i.e.,
@@ -120,10 +121,14 @@ dat <- data.frame(m.id = ef$MotherID,
                   gm.deaths = ef$G0_F_InfD + ef$G0_M_InfD,
                   gm.m.deaths = ef$G0_M_InfD)
 dat <- dat[dat$gm.births > 1 & dat$gm.m.births > 0, ]
+dat <- dat[order(dat$m.id, dat$enter), ]
+rownames(dat) <- 1:NROW(dat)
 dat$gm.deaths.cut <- cut(dat$gm.deaths, c(-1, 0.5, 1.5, 25), labels = c("0", "1", "2+"))
 dat$m.birthdate <- (as.numeric(dat$m.birthdate) - 51478) / 3650.2425 
-knitr::kable(head(dat, 10))
+knitr::kable(head(dat[, c("m.id", "m.birthdate", "parity", "enter", "exit", "event", "gm.deaths")], 10))
 ```
+
+*m.birthdate* is a centered version of *Mother's birthdate*, *enter* is mother's age at delivery, and *exit* is the age of mother at the death of the infant if it happens before age 1, $enter + 1$ otherwise. *event* indicates an infant death.
 
 ## The binary model
 
@@ -131,7 +136,8 @@ In the full binary model, the variable *event* is the response in a logistic reg
 
 ```{r binclust, cache = TRUE}
 library(lme4)
-fit <- glmer(event ~ gm.deaths.cut + m.birthdate + (1 | m.id), data = dat, family = binomial(link =  cloglog))
+fit <- glmer(event ~ gm.deaths.cut + m.birthdate + (1 | m.id), data = dat, 
+             family = binomial(link =  cloglog))
 summary(fit)
 ```
 
@@ -148,7 +154,8 @@ dat$deaths <- deaths[indx]
 expos <- tapply(dat$exit - dat$enter, dat$m.id, sum)
 dat$expos <- expos[indx]
 dat1 <- dat[dat$parity == 1, ]
-knitr::kable(summary(dat1[, c("gm.births", "gm.deaths", "deaths", "expos", "m.birthdate")]))
+rownames(dat1) <- 1:NROW(dat1)
+knitr::kable(head(dat1[, c("gm.births", "gm.deaths", "deaths", "expos", "m.birthdate")]))
 ```
 
 A Poisson regression with *deaths* as response and *expos* as offset (log scale):
@@ -160,14 +167,14 @@ summary(fit)
 
 Note the similarity of the estimates with the "full" binary model! And note further that here we do not have to worry about "random effects" (but see the Conclusions).
 
-Note further the bad/erroneous presentation of $p$-values! Unfortunalely, standard output from statistical software looks like this (even from R! But in R I can do something about it ...). The problem is twofold: (i) We do not want $p$-values for *levels* of a variable, but for the variable itself. (ii) The $p$-values presented are of the so-called *Wald" type, which si perfectly OK in linear models but can be a *disaster in non-linear models*. The etod of choice is to use $p$-values based on the *likelihood ratio test* (LTR).
+Note further the bad/erroneous presentation of $p$-values! Unfortunalely, standard output from statistical software looks like this (even from R! But in R I can do something about it ...). The problem is twofold: (i) We do not want $p$-values for *levels* of a variable, but for the variable itself. (ii) The $p$-values presented are of the so-called "Wald" type, which is perfectly OK in linear models but can be a *disaster in non-linear models*. The method of choice is to use $p$-values based on the *likelihood ratio test* (LRT).
 In R, you get them by applying the *drop1* function to the output (*fit*) from the regression:
 
 ```{r droppois}
 drop1(fit, test = "Chisq")
 ```
 
-Note the difference; unfortunately you need to do some manual work to get it properly into the regression table. I have written some code in R that automates the procedure for $\LaTeX$ output, but not (yet) for *R markdown*, which I use here.
+Note the difference; unfortunately you need to do some manual work to get it properly into the regression table. I have written some code in R that automates the procedure for $\text{\LaTeX}$ output, but not (yet) for *R markdown*, which I use here.
 
 ## Survival analysis
 
@@ -196,6 +203,6 @@ A *clear non-proportionality*: It is mothers with exactly one death by grandmoth
 
 Based on these small experiments, I would recommend using the *simple binary model*, that is, *Poisson regression*, as above. It is the model that requires the least assumptions: The survival analysis has two severe problems: (i) individual frailty, and (ii) non-proportionality on the important explanatory variable (in our data). On the other hand, (ii) opens up for new interesting research questions, about varying effects over the span of the first year of life.
 
-Another "dependency problem" that is not addressed anywhere(?): The same individual may pop up in our data set as a grandmother *and* as a mother, even as a *child*. This could be adressed by restricting the presencece of each individual: only one performance! This would also exclude siblings to be present as mothers.
+Another "dependency problem" that is not addressed anywhere(?): The same individual may pop up in our data set as a grandmother *and* as a mother, even as a *child*. This could be adressed by restricting the presence of each individual: only one performance! This would also exclude siblings to be present as mothers.
 
 Pick your poison.
