@@ -234,6 +234,10 @@ abline(h = exp(1), lty = 3)
 
 The random effects are directly interpretable in a Cox regression. For instance, a value of 1 (one) represents a relative risk of $\exp(1) = 2.718$. See Figure~\ref{fig:ranef}: A few mother's have that relative risk or higher.
 
+<<saveef>>=
+save(ef, file = "ef.rda")
+@
+
 \subsection{}
 
 \end{document}
