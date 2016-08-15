@@ -1,5 +1,9 @@
---- title: "Models for intergenerational transmissions in infant mortality" 
-author: "Göran Broström" date: "August 10, 2016" output: html_document ---
+--- 
+title: "Models for intergenerational transmissions in infant mortality"
+author: "Göran Broström"
+date: "August 15, 2016"
+output: html_document
+---
 
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(echo = TRUE) 
@@ -95,7 +99,7 @@ essentially the same way, that is (ii) is the preferred way.
 So, we have (at least) three possible models to our disposal; which one should we choose?
 My maxim is *the simpler, the better*, which would point to the $2\times 2$ table above, but it is clearly OK to apply one of the more elaborate models, if one is willing to investigate the necessary model checks (*proportional hazards*, *conditional independence*, etc.).
 
-But, whatever our choice is, I recommend employing the simple model as a sanity check: If it shows a  completely different result, we should be worried.
+But, whatever our choice is, I recommend employing the simple model(s) as a sanity check: If it shows a  completely different result, we should be worried.
 
 # Application
 
@@ -152,10 +156,18 @@ A Poisson regression with *deaths* as response and *expos* as offset (log scale)
 ```{r poiss}
 fit <- glm(deaths ~ offset(log(expos)) + gm.deaths.cut + m.birthdate, data = dat1, family = poisson)
 summary(fit)
-drop1(fit, test = "Chisq")
 ```
 
 Note the similarity of the estimates with the "full" binary model! And note further that here we do not have to worry about "random effects" (but see the Conclusions).
+
+Note further the bad/erroneous presentation of $p$-values! Unfortunalely, standard output from statistical software looks like this (even from R! But in R I can do something about it ...). The problem is twofold: (i) We do not want $p$-values for *levels* of a variable, but for the variable itself. (ii) The $p$-values presented are of the so-called *Wald" type, which si perfectly OK in linear models but can be a *disaster in non-linear models*. The etod of choice is to use $p$-values based on the *likelihood ratio test* (LTR).
+In R, you get them by applying the *drop1* function to the output (*fit*) from the regression:
+
+```{r droppois}
+drop1(fit, test = "Chisq")
+```
+
+Note the difference; unfortunately you need to do some manual work to get it properly into the regression table. I have written some code in R that automates the procedure for $\LaTeX$ output, but not (yet) for *R markdown*, which I use here.
 
 ## Survival analysis
 
@@ -175,13 +187,15 @@ A check of proportionality by *gm.deaths*, another worry:
 
 ```{r checkprop}
 fit <- coxreg(Surv(exit - enter, event) ~ strata(gm.deaths.cut) + m.birthdate, data = dat)
-plot(fit, col = c("black", "blue", "red"), xlab = "Age")
+plot(fit, col = c("black", "blue", "red"), xlab = "Age", ylab = "Cumulative hazards")
 ```
 
-A *clear non-proportionality*: It is mothers with exactly one death by grandmother who deviate. Initially, up to two months, the risk is the same as for mothers with heavier grandmother baggage, but surviving the first two months and the rest is easy sailing, even rosier than for those mothers whose grandmother didn't suffer any fatality.
+A *clear non-proportionality*: It is mothers with exactly one death by grandmother who deviate. Initially, up to two months, the risk is the same as for mothers with heavier grandmother baggage, but after surviving the first two months, the rest is easy sailing, even rosier than for those mothers whose grandmother didn't suffer any fatality.
 
 # Conclusions
 
-Based on these small experiments, I would recommend using the *simple binary model*, that is, *Poisson regression*, as above. It is the model that requires the least assumptions: The survival analysis has two severe problems: (i) individual frailty, and (ii) non-proportionality on the important explanatory variable. On the other hand, (ii) opens up for new interesting research questions, about varying effect over span of the first year of life.
+Based on these small experiments, I would recommend using the *simple binary model*, that is, *Poisson regression*, as above. It is the model that requires the least assumptions: The survival analysis has two severe problems: (i) individual frailty, and (ii) non-proportionality on the important explanatory variable (in our data). On the other hand, (ii) opens up for new interesting research questions, about varying effects over the span of the first year of life.
 
-Another "random effects problem" that is not addressed here: 
+Another "dependency problem" that is not addressed anywhere(?): The same individual may pop up in our data set as a grandmother *and* as a mother, even as a *child*. This could be adressed by restricting the presencece of each individual: only one performance! This would also exclude siblings to be present as mothers.
+
+Pick your poison.
