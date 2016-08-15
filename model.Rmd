@@ -1,7 +1,9 @@
 --- title: "Models for intergenerational transmissions in infant mortality" 
 author: "Göran Broström" date: "August 10, 2016" output: html_document ---
 
-```{r setup, include=FALSE} knitr::opts_chunk$set(echo = TRUE) ```
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = TRUE) 
+```
 
 # The data
 
@@ -80,9 +82,9 @@ for an example.
 
 # A survival analysis approach
 
-In this approach we utilize the full data set $(T_i, D_i), i = 1, \ldots, n$ and
+In this approach we utilize the full data set $(B_i, T_i, D_i, Z_i, X_i), i = 1, \ldots, n$ and
 a proportional hazards assumption, as in the binary approach. The research
-question is then more indirect: "Does grandmother's infant deaths affect the
+question is then more indirect, e.g.: "Does grandmother's infant deaths affect the
 life length of mother's children, restricted to the first year of life?"
 
 The same identifiability problem as above shows here, and it can be handled in
@@ -97,11 +99,89 @@ But, whatever our choice is, I recommend employing the simple model as a sanity 
 
 # Application
 
-I exemplify with a subset of the data from Skellefteå. It looks like this:
+I exemplify with a subset of the data from Skellefteå. It looks like this (the first ten lines):
 
 ```{r datamoth, echo = FALSE}
-
+load("ef.rda")
+dat <- data.frame(m.id = ef$MotherID,
+                  m.birthdate = ef$Mother_birthdate,
+                  enter = ef$enter,
+                  exit = ef$exit,
+                  event = ef$event,
+                  sex = ef$Child_sex,
+                  parity = ef$Birth_order,
+                  gm.id = ef$GrandmotherID,
+                  gm.births = ef$G0_F_Births + ef$G0_M_Births,
+                  gm.m.births = ef$G0_M_Births,
+                  gm.deaths = ef$G0_F_InfD + ef$G0_M_InfD,
+                  gm.m.deaths = ef$G0_M_InfD)
+dat <- dat[dat$gm.births > 1 & dat$gm.m.births > 0, ]
+dat$gm.deaths.cut <- cut(dat$gm.deaths, c(-1, 0.5, 1.5, 25), labels = c("0", "1", "2+"))
+dat$m.birthdate <- (as.numeric(dat$m.birthdate) - 51478) / 3650.2425 
+knitr::kable(head(dat, 10))
 ```
 
 ## The binary model
 
+In the full binary model, the variable *event* is the response in a logistic regression, with clustering on *mother's ID*.
+
+```{r binclust, cache = TRUE}
+library(lme4)
+fit <- glmer(event ~ gm.deaths.cut + m.birthdate + (1 | m.id), data = dat, family = binomial(link =  cloglog))
+summary(fit)
+```
+
+Note the warning: *The model is nearly unidentifiable*. This is not surprising, since we *cluster on mother* and the *explanatory variable is constant over mothers*! This is not a good way to take into account the "natural" biological/social variation between mothers. A better approach is to try to find a summary measure for each mother, for instance the total number of infant deaths. Which leads to
+
+## The *simple* (aggregated) binary model
+
+Aggregating over mothers gives
+
+```{r aggregmot}
+indx <- tapply(dat$event, dat$m.id)
+deaths <- tapply(dat$event, dat$m.id, sum)
+dat$deaths <- deaths[indx]
+expos <- tapply(dat$exit - dat$enter, dat$m.id, sum)
+dat$expos <- expos[indx]
+dat1 <- dat[dat$parity == 1, ]
+knitr::kable(summary(dat1[, c("gm.births", "gm.deaths", "deaths", "expos", "m.birthdate")]))
+```
+
+A Poisson regression with *deaths* as response and *expos* as offset (log scale):
+
+```{r poiss}
+fit <- glm(deaths ~ offset(log(expos)) + gm.deaths.cut + m.birthdate, data = dat1, family = poisson)
+summary(fit)
+drop1(fit, test = "Chisq")
+```
+
+Note the similarity of the estimates with the "full" binary model! And note further that here we do not have to worry about "random effects" (but see the Conclusions).
+
+## Survival analysis
+
+Walking in the other direction, that is, making the model *more* complex and fragile, we can apply survival analysis (Cox regression).
+
+```{r coxreg}
+library(eha)
+fit <- coxreg(Surv(exit - enter, event) ~ gm.deaths.cut + m.birthdate, data = dat)
+dr <- drop1(fit, test = "Chisq")
+summary(fit)
+dr
+```
+
+No big difference in results from the previous attempts. However, here we have to worry about the possibility of "frailty" ("random effects", etc) due to dependency of sibling fates.
+
+A check of proportionality by *gm.deaths*, another worry:
+
+```{r checkprop}
+fit <- coxreg(Surv(exit - enter, event) ~ strata(gm.deaths.cut) + m.birthdate, data = dat)
+plot(fit, col = c("black", "blue", "red"), xlab = "Age")
+```
+
+A *clear non-proportionality*: It is mothers with exactly one death by grandmother who deviate. Initially, up to two months, the risk is the same as for mothers with heavier grandmother baggage, but surviving the first two months and the rest is easy sailing, even rosier than for those mothers whose grandmother didn't suffer any fatality.
+
+# Conclusions
+
+Based on these small experiments, I would recommend using the *simple binary model*, that is, *Poisson regression*, as above. It is the model that requires the least assumptions: The survival analysis has two severe problems: (i) individual frailty, and (ii) non-proportionality on the important explanatory variable. On the other hand, (ii) opens up for new interesting research questions, about varying effect over span of the first year of life.
+
+Another "random effects problem" that is not addressed here: 
