@@ -104,9 +104,9 @@ But, whatever our choice is, I recommend employing the simple model(s) as a sani
 
 # Application
 
-I exemplify with a subset of the data from Skellefteå. It looks like this (the first ten lines):
+I exemplify with a subset of the data from Skellefteå. Here is the code producing it from the data in *Episodes_file.dta*.It looks like this (the first ten lines):
 
-```{r datamoth, echo = FALSE}
+```{r datamoth, echo = TRUE}
 load("ef.rda")
 dat <- data.frame(m.id = ef$MotherID,
                   m.birthdate = ef$Mother_birthdate,
@@ -124,11 +124,16 @@ dat <- dat[dat$gm.births > 1 & dat$gm.m.births > 0, ]
 dat <- dat[order(dat$m.id, dat$enter), ]
 rownames(dat) <- 1:NROW(dat)
 dat$gm.deaths.cut <- cut(dat$gm.deaths, c(-1, 0.5, 1.5, 25), labels = c("0", "1", "2+"))
-dat$m.birthdate <- (as.numeric(dat$m.birthdate) - 51478) / 3650.2425 
-knitr::kable(head(dat[, c("m.id", "m.birthdate", "parity", "enter", "exit", "event", "gm.deaths")], 10))
+dat$m.birthdate.c <- as.numeric(dat$m.birthdate) / 365.2425 + 120
+```
+I guess that it is clear how this data set is constructed.
+It looks like this (first ten lines):
+
+```{r lookslike}
+knitr::kable(head(dat[, c("m.id", "m.birthdate", "m.birthdate.c", "parity", "enter", "exit", "event", "gm.deaths")], 10))
 ```
 
-*m.birthdate* is a centered version of *Mother's birthdate*, *enter* is mother's age at delivery, and *exit* is the age of mother at the death of the infant if it happens before age 1, $enter + 1$ otherwise. *event* indicates an infant death.
+*m.birthdate.c* is a centered (around 1 Jan 1850) version of Mother's birthdate *m.birthdate*, this is changed from the earlier version so t will be easier to explain. (It is a good habit to center covariates; the advantage shows up in *interactions*.) *enter* is mother's age at delivery, and *exit* is the age of mother at the death of the infant if it happens before age 1, $enter + 1$ otherwise. *event* indicates an infant death.
 
 ## The binary model
 
@@ -143,7 +148,9 @@ summary(fit)
 
 Note the warning: *The model is nearly unidentifiable*. This is not surprising, since we *cluster on mother* and the *explanatory variable is constant over mothers*! This is not a good way to take into account the "natural" biological/social variation between mothers. A better approach is to try to find a summary measure for each mother, for instance the total number of infant deaths. Which leads to
 
-## The *simple* (aggregated) binary model
+## A Poisson model
+
+I now think that the following model is better (simpler with covariates) than the *simple binary* described above.
 
 Aggregating over mothers gives
 
@@ -155,13 +162,15 @@ expos <- tapply(dat$exit - dat$enter, dat$m.id, sum)
 dat$expos <- expos[indx]
 dat1 <- dat[dat$parity == 1, ]
 rownames(dat1) <- 1:NROW(dat1)
-knitr::kable(head(dat1[, c("gm.births", "gm.deaths", "deaths", "expos", "m.birthdate")]))
+knitr::kable(head(dat1[, c("gm.births", "gm.deaths", "deaths", "expos", "m.birthdate.c")]))
 ```
+
+As you can see from the code above, *expos* is the *total exposure time* for infant deaths for a woman, that is, the otal time her children spends alive in infancy. *deaths* is the total number of infant deaths for a woman, *gm.deaths* the corresponding number for her mother, *m.birthdate.c* is explained above. *gm.deaths.cut* is what you guess (see the labels).
 
 A Poisson regression with *deaths* as response and *expos* as offset (log scale):
 
 ```{r poiss}
-fit <- glm(deaths ~ offset(log(expos)) + gm.deaths.cut + m.birthdate, data = dat1, family = poisson)
+fit <- glm(deaths ~ offset(log(expos)) + gm.deaths.cut + m.birthdate.c, data = dat1, family = poisson)
 summary(fit)
 ```
 
@@ -182,7 +191,7 @@ Walking in the other direction, that is, making the model *more* complex and fra
 
 ```{r coxreg}
 library(eha)
-fit <- coxreg(Surv(exit - enter, event) ~ gm.deaths.cut + m.birthdate, data = dat)
+fit <- coxreg(Surv(exit - enter, event) ~ gm.deaths.cut + m.birthdate.c, data = dat)
 dr <- drop1(fit, test = "Chisq")
 summary(fit)
 dr
@@ -193,7 +202,7 @@ No big difference in results from the previous attempts. However, here we have t
 A check of proportionality by *gm.deaths*, another worry:
 
 ```{r checkprop}
-fit <- coxreg(Surv(exit - enter, event) ~ strata(gm.deaths.cut) + m.birthdate, data = dat)
+fit <- coxreg(Surv(exit - enter, event) ~ strata(gm.deaths.cut) + m.birthdate.c, data = dat)
 plot(fit, col = c("black", "blue", "red"), xlab = "Age", ylab = "Cumulative hazards")
 ```
 
