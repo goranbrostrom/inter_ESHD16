@@ -1,0 +1,45 @@
+---
+title: "Description of the Skellefteå data"
+author: "Göran Broström"
+date: "August 18, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+A closer look at the data created from *Episodes_file_creator*. Start by loading it
+```{r loaddata}
+load("ef.rda")
+ef$event <- as.logical(ef$event)
+summary(ef[, c("Child_sex", "G0_Births", "G0_InfD_cat", "Mother_birthdate", "enter", "exit", "event")])
+ef1 <- ef[!duplicated(ef$MotherID), ]
+```
+
+# Grandmothers, mothers and mother-siblings
+
+How many mothers and grandmothers?
+
+```{r howmany}
+nrow(ef1) # No. of mothers
+length(unique(ef1$GrandmotherID)) # No. of grandmothers
+table(table(ef1$GrandmotherID)) # 'Mother siblings'
+```
+
+How many grandmothers are also mothers (and vice versa)?
+
+```{r countgm}
+with(ef1, sum(unique(GrandmotherID) %in% MotherID)) 
+with(ef1, sum(MotherID %in% GrandmotherID)) 
+```
+(Of course!)
+
+This frequent reappearance of women in dual roles and also the sibling frequency among mothers create dependency problems.
+Two ways to deal with it:
+
+1. Restrict data.
+
+2. Ignore it.
