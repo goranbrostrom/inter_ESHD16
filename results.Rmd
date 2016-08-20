@@ -1,0 +1,81 @@
+---
+title: "Results"
+author: "Göran Broström"
+date: "August 19, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment = NA)
+```
+
+# Introduction
+
+A closer look at the data created from *Episodes_file_creator*. It contains one record per birth and is used for the suvival analysis approach, where the influence of grandmother's infant deaths on her grandchild's survival chances is studied.
+
+```{r loaddata}
+load("ef.rda")
+ef$event <- as.logical(ef$event)
+levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
+indx <- tapply(ef$MotherID, ef$MotherID)
+summary(ef[, c("Child_sex", "Mother_birthdate", "enter", "exit", "event")])
+```
+
+This data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's infant deaths on the number of her daughter's' infant deaths is studied.
+
+```{r aggrfile}
+ef$M_Births <- with(ef, tapply(MotherID, MotherID, length)[indx])
+ef$M_Deaths <- with(ef, tapply(event, MotherID, sum)[indx])
+ef$M_expon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
+ef1 <- ef[!duplicated(ef$MotherID), ]
+knitr::kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
+```
+
+
+# Grandmothers, mothers and mother-siblings
+
+How many mothers and grandmothers?
+
+```{r howmany}
+nrow(ef1) # No. of mothers
+length(unique(ef1$GrandmotherID)) # No. of grandmothers
+table(table(ef1$GrandmotherID)) # 'Mother siblings'
+```
+
+How many grandmothers are also mothers (and vice versa)?
+
+```{r countgm}
+with(ef1, sum(unique(GrandmotherID) %in% MotherID)) 
+with(ef1, sum(MotherID %in% GrandmotherID)) 
+```
+(Of course!)
+
+# Poisson regression
+
+In this analysis we use the aggregated data set with summary data on mothers. The response variable is number of deaths, and it is balanced by the total risk time for infant deaths.
+
+```{r poisson}
+library(xtable)
+options(digits = 4)
+fit <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + Mother_birthdate, data = ef1, family = poisson)
+dr <- drop1(fit, test = "Chisq")
+x <- summary(fit)$coefficients
+outp <- matrix(0, ncol = 4, nrow = 6)
+outp[, 1] <- c(x[1, 1], NA, x[, 1][-1])
+outp[, 2] <- c(x[1, 2], NA, x[, 2][-1])
+outp[, 3] <- exp(outp[, 1])
+outp[, 4] <- c(dr[[5]][1:2], NA, NA, dr[[5]][3], dr[[5]][4])
+rownames(outp) <- c("(intercept)  ", "G0_InfD   0", "          1", "          2+", "G0_Births", "Mother_Birthdate")
+colnames(outp) <- c("Coef", "S.E.", "exp(Coef)", "L-R p")
+##knitr::kable(outp)
+outp
+##print(xtable(outp), type = "html")
+##summary(fit)
+```
+
+This frequent reappearance of women in dual roles and also the sibling frequency among mothers create dependency problems.
+Two ways to deal with it:
+
+1. Restrict data.
+
+2. Ignore it.
