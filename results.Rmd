@@ -4,14 +4,18 @@ title: Clustering and intergenerational transfers of infant mortality in 19th ce
 author: "Elisabeth Engberg, Sören Edvinsson, and Göran Broström"
 date: "August 21, 2016"
 output:
-  pdf_document: default
+  pdf_document: 
+    fig_height: 4
+    fig_width: 5
+    fig_caption: yes
   html_document: default
   word_document:
     fig_caption: yes
-    fig_height: 5
-    fig_width: 6
+    fig_height: 4
+    fig_width: 5
     reference_docx: word-styles-reference-01.docx
 bibliography: cluster.bib
+fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
@@ -20,6 +24,7 @@ options(show.signif.stars = FALSE)
 library(knitr)
 library(eha)
 ```
+# Introduction
 
 # Area
 
@@ -86,12 +91,17 @@ A closer look at the data created from *Episodes_file_creator*. It contains one 
 load("ef.rda")
 ef$event <- as.logical(ef$event)
 levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
-ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 145
+ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 145 # 1825 == 0!
+ef <- ef[ef$M_birthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 5.5, 25), labels = c("1", "2", "3-5", "6+"))
 ##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "M_birthdate", "enter", "exit", "event")]), type = "pandoc")
 ```
 
 This data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's infant deaths on the number of her daughter's' infant deaths is studied.
+
+### The covered time period
+
+See Figure 1 for the distribution of mothers' birth dates.
 
 ```{r aggrfile}
 indx <- tapply(ef$MotherID, ef$MotherID)
@@ -102,24 +112,41 @@ ef1 <- ef[!duplicated(ef$MotherID), ]
 ##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
 ```
 
+```{r sample, fig.cap = "Distribution of mother birthdates."}
+plot(density(ef1$M_birthdate + 1825), xlab = "Year", main = "", col = "blue")
+abline(h = 0)
+```
 
-### Grandmothers, mothers and mother-siblings
+### Infant mortality by year
 
-How many mothers and grandmothers?
+```{r imryear}
+
+```
+
+
+### Grandmothers, mothers and mother-sisters
+
 
 ```{r howmany}
-nrow(ef1) # No. of mothers
-length(unique(ef1$GrandmotherID)) # No. of grandmothers
-table(table(ef1$GrandmotherID)) # 'Mother siblings'
+n.m <- nrow(ef1) # No. of mothers
+n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
+x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
 ```
+
+There are `r n.m` mothers and `r n.gm` grandmothers in the data, so obviously there are many sister groups in the data. The distribution of the sizes of sibling groups is shown in Figure 2.
+
+```{r sibmoth, fig.cap = "Distribution of sister group sizes."}
+barplot(x, xlab = "Size", ylab = "Frequency")
+```
+
 
 How many grandmothers are also mothers (and vice versa)?
 
 ```{r countgm}
-with(ef1, sum(unique(GrandmotherID) %in% MotherID)) 
-with(ef1, sum(MotherID %in% GrandmotherID)) 
+m.gm <- with(ef1, sum(unique(GrandmotherID) %in% MotherID)) 
 ```
-(Of course!)
+
+The answer is `r m.gm`, or `r round(m.gm / n.gm * 100, 2)` per cent of the grandmothers.
 
 ## Standard results
 
@@ -135,7 +162,8 @@ where $R_i$ is total risktime for mother No. $i$, $\mathbf{x}_i$ a vector of her
 Formally, $R_i$ is entered into the model as an *offset* after taking logs. The logged value is stored in the variable *expon*. The call to the **R** [@R] function *glm* is
 
 ```{r callglm, echo = TRUE}
-fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + M_birthdate, 
+fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + 
+               G0_InfD_cat + G0_Births + M_birthdate, 
              data = ef1, family = poisson)
 ```
 The result of this call is presented in two steps: First, *the statistical significance* is calculated and shown, in Table 1, and then the effect sizes are graphically evaluated, in Figure 1.
