@@ -1,38 +1,109 @@
 ---
-title: "Results"
-author: "Göran Broström"
-date: "August 19, 2016"
-output: html_document
+title: Clustering and intergenerational transfers of infant mortality in 19th century
+  northern Sweden
+author: "Elisabeth Engberg, Sören Edvinsson, and Göran Broström"
+date: "August 21, 2016"
+output:
+  pdf_document: default
+  html_document: default
+  word_document:
+    fig_caption: yes
+    fig_height: 5
+    fig_width: 6
+    reference_docx: word-styles-reference-01.docx
+bibliography: cluster.bib
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = NA)
+options(show.signif.stars = FALSE)
+library(knitr)
+library(eha)
 ```
 
-# Introduction
+# Area
+
+ The area under study is the Skellefteå region on the Gulf of Bothnia. 
+The analyses of the Skellefteå region cover the period 1831–1900.
+
+The Skellefteå region consists of the parish of Skellefteå and the parish of
+Byske. Byske was a part of Skellefteå parish until 1875. For the remaining
+part of the century it was an independent parish. Two other parishes which
+became independent in the early nineteenth century, Jörn and Norsjö, were
+incorporated into the parish of Skellefteå for a number of years at the be-
+ginning of the century and are included in the analyses for these years. The
+region is situated in the province of Västerbotten in the northern part of
+Sweden on the Gulf of Bothnia. The parish was one of the largest parishes in
+Sweden both in area and in population during the nineteenth century. The
+population began to increase slowly during the seventeenth and eighteenth
+centuries. By the turn of the nineteenth century, about 6 900 inhabitants
+lived in the parish. The population of the parish increased rapidly during the
+first half of the century, reaching approximately 14 000 by 1850. By 1900 the
+two parishes had nearly 30 000 inhabitants [@as94]. The increase
+in population was mainly the result of a high natural growth. Mortality was
+comparatively low. Fertility was high, not only by Swedish standards, but
+also in an international comparison and there are no indications of family
+planning. Total fertility fluctuated around five children per woman and, al-
+though fertility did decline during the nineteenth century, the actual fertility
+transition occurred late in the district [@as94]. The rate of 
+illegitimacy was low in comparison with many other parts of Northern Sweden
+where frequent pre-nuptial conceptions and illegitimate births were common.
+The illegitimacy rate fluctuated between three and six per cent during the
+nineteenth century [@as94]. As the population increased new land
+was cultivated and, although some villages became quite large, population
+density, on the whole, was low.
+
+During most of the nineteenth century industrialisation had little impact
+on the local economy. Some small sawmills were established early in the
+century. The majority of the population (in 1835 approximately 85 per cent)
+made their living from farming, mainly animal husbandry. The farmers were
+mainly freeholders and there were no large estates in the region. The distri-
+bution of economic resources among this group was comparatively equal.
+
+
+# Data sources
+
+The analysis is based on information found in the Swedish church book
+records, that is, birth, death, migration, and catechetical registers. In the
+catechetical registers the clergy kept a continuous record of all demographic
+events for all individuals residing in a parish, making it possible to follow in-
+dividuals over time and to identify their relatives. Furthermore, information
+on literacy and occupation was recorded, including any changes in status. A
+selected number of parishes are digitalized by the [Demographic Data Base at
+Umeå University](http://www.cedar.umu.se/). The entries in the catechetical
+registers have been linked for each individual making possible longitudinal
+analyses.
+
+# Implementation of IDS
 
 A closer look at the data created from *Episodes_file_creator*. It contains one record per birth and is used for the suvival analysis approach, where the influence of grandmother's infant deaths on her grandchild's survival chances is studied.
+
+# Results
+
+## Descriptive statistics
 
 ```{r loaddata}
 load("ef.rda")
 ef$event <- as.logical(ef$event)
 levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
-indx <- tapply(ef$MotherID, ef$MotherID)
-summary(ef[, c("Child_sex", "Mother_birthdate", "enter", "exit", "event")])
+ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 145
+ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 5.5, 25), labels = c("1", "2", "3-5", "6+"))
+##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "M_birthdate", "enter", "exit", "event")]), type = "pandoc")
 ```
 
 This data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's infant deaths on the number of her daughter's' infant deaths is studied.
 
 ```{r aggrfile}
+indx <- tapply(ef$MotherID, ef$MotherID)
 ef$M_Births <- with(ef, tapply(MotherID, MotherID, length)[indx])
 ef$M_Deaths <- with(ef, tapply(event, MotherID, sum)[indx])
 ef$M_expon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
 ef1 <- ef[!duplicated(ef$MotherID), ]
-knitr::kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
+##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
 ```
 
 
-# Grandmothers, mothers and mother-siblings
+### Grandmothers, mothers and mother-siblings
 
 How many mothers and grandmothers?
 
@@ -50,28 +121,115 @@ with(ef1, sum(MotherID %in% GrandmotherID))
 ```
 (Of course!)
 
-# Poisson regression
+## Standard results
 
-In this analysis we use the aggregated data set with summary data on mothers. The response variable is number of deaths, and it is balanced by the total risk time for infant deaths.
+### Poisson regression
 
-```{r poisson}
-library(xtable)
-options(digits = 4)
-fit <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + Mother_birthdate, data = ef1, family = poisson)
-dr <- drop1(fit, test = "Chisq")
-x <- summary(fit)$coefficients
-outp <- matrix(0, ncol = 4, nrow = 6)
-outp[, 1] <- c(x[1, 1], NA, x[, 1][-1])
-outp[, 2] <- c(x[1, 2], NA, x[, 2][-1])
-outp[, 3] <- exp(outp[, 1])
-outp[, 4] <- c(dr[[5]][1:2], NA, NA, dr[[5]][3], dr[[5]][4])
-rownames(outp) <- c("(intercept)  ", "G0_InfD   0", "          1", "          2+", "G0_Births", "Mother_Birthdate")
-colnames(outp) <- c("Coef", "S.E.", "exp(Coef)", "L-R p")
-##knitr::kable(outp)
-outp
+The expected value of the number of infant deaths $D_i$ for mother No. $i, \, i = 1, \ldots, n$, is modeled by a Poisson distribution as 
+
+$$
+E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
+$$
+where $R_i$ is total risktime for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risktime is equal to her number of births.)
+
+Formally, $R_i$ is entered into the model as an *offset* after taking logs. The logged value is stored in the variable *expon*. The call to the **R** [@R] function *glm* is
+
+```{r callglm, echo = TRUE}
+fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + M_birthdate, 
+             data = ef1, family = poisson)
+```
+The result of this call is presented in two steps: First, *the statistical significance* is calculated and shown, in Table 1, and then the effect sizes are graphically evaluated, in Figure 1.
+
+
+```{r poisson, results = 'asis'}
+options(digits = 8)
+fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + M_birthdate, data = ef1, family = poisson)
+dr <- drop1(fit.p, test = "Chisq")
+
+kable(dr, format = "pandoc", caption = "Analysis of deviance (likelihood ratio tests). Poisson regression.", digits = 5)
+x <- summary(fit.p)$coefficients
+##outp <- matrix(0, ncol = 4, nrow = 6)
+##outp[, 1] <- c(x[1, 1], NA, x[, 1][-1])
+##outp[, 2] <- c(x[1, 2], NA, x[, 2][-1])
+##outp[, 3] <- exp(outp[, 1])
+##outp[, 4] <- c(dr[[5]][1:2], NA, NA, dr[[5]][3], dr[[5]][4])
+##rownames(outp) <- c("(intercept)  ", "G0_InfD   0", "          1", "          2+", "G0_Births", ##"Mother_Birthdate")
+##colnames(outp) <- c("Coef", "S.E.", "exp(Coef)", "L-R p")
+##knitr::kable(outp, format = "pandoc", caption = "Table 2. Poisson regression.", label = "tab:tab1")
+##outp
 ##print(xtable(outp), type = "html")
 ##summary(fit)
 ```
+
+So, the likelihood ratio test (LRT) shows that *G0_InfD_cat* is highly *statistically* significant. 
+
+Is it also *practically* significant? Figure 1 shows the *relative* risk increase induced by exactly one infant death by grandmother (GM) and at least two, compared to cases with no infant deaths (baseline). 
+
+```{r poiseff, fig.cap = "Relative risk increase of infant mortality, compared to no grandmother infant deaths.", fig.width = 4}
+cat0 <- exp(fit.p$coef[1] + 7 * fit.p$coef[5])
+cat1 <- exp(sum(fit.p$coef[1:2]) + 7 * fit.p$coef[5])
+cat2 <- exp(sum(fit.p$coef[c(1, 3)]) + 7 * fit.p$coef[5])
+barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+        ylim = c(0, 25), ylab = "Relative IMR increase (per cent)")
+```
+
+The *baseline risk* is `r round(100 * cat0, 2)` per cent. The *relative* risk increase is quite substantial for 2+ grandmother deaths, but the *absolute* increase (`r round(100 * (cat2 - cat0), 2)` per cent) is modest. These calculations are made for a mother born 1825 and her grandmother gave birth to seven children ("average" values). 
+
+### Survival analysis
+
+Here the full data set is used, that is, the infants are the units of analysis. The **R** package *eha* [@eha, @ehar] is used, and the explanatory variables are almost the same as in the Poisson regression analysis. The difference is that instead of mother's birthdate, the infant's birthdate is used (no big difference).
+
+```{r surv}
+fit.c <- coxreg(Surv(exit - enter, event) ~ G0_InfD_cat + I(G0_Births - 7) + I(M_birthdate + enter) + parity, data = ef)
+dr.c <- drop1(fit.c, test = "Chisq")
+kable(dr.c, format = "pandoc", caption = "Analysis of deviance (likelihood ratio tests). Cox regression.", digits = 5)
+```
+
+The statistical significance of grandmother's infant deaths is obvious. The estimated relative risks are best shown by plotting the *cumulative hazards* for the three groups.
+
+```{r relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths."}
+fit.str <- coxreg(Surv(exit - enter, event) ~ strata(G0_InfD_cat) + I(G0_Births - 7) + I(M_birthdate + enter) + parity, data = ef)
+plot(fit.str, col = 1:3, lty = 1:3, xlab = "Age", ylab = "Cumulative hazards.")
+```
+
+There is an evident deviation from the assumption of *proportional hazards*: It is cases with exactly one grandmother infant death that deviates. However, this does not disturb the main conclusion: Two or more grandmother infant deaths is harmful, quite in line with the results from the Poisson regression. 
+
+## Extended models
+
+### The Poisson model
+
+It turns out that the model fit to data is somewhat better with *number of births* as the offset (log scale). Also showing a slight improvement is to use *grandmother's IMR* as explanatory variable rather than her *absolute number of deaths*. The IMR is defined as the number of infant deaths divided by the number of births. These changes also implies that the comparison *mother vs. grandmother* happens on a probability scale rather than on the intensity one.
+
+```{r refinedpois, results = "asis"}
+ef1$G0_IMR <- ef1$G0_InfD / ef1$G0_Births
+fit.p2 <- glm(M_Deaths ~ offset(log(M_expon)) + G0_IMR + M_birthdate + parity, data = ef1, family = poisson)
+dr <- drop1(fit.p2, test = "Chisq")
+kable(dr, format = "pandoc", caption = "Poisson regression, grandmother's IMR. Analysis of deviance.", digits = 5)
+```
+
+The general conclusion is not changed: Grandmother's IMR has a strong influence on infant mortality,  and, indirectly, on her daughter's IMR.
+
+The size of the effect is shown in Figure 3.
+
+```{r plotimr, fig.cap = "Probability of infant death for mother (M_IMP) by probability of infant death for grandmother (GM_IMP). Poisson regression."}
+x <- seq(0, 1, length = 1000)
+mimr <- with(fit.p2, exp(coefficients[1] + coefficients[2] * x))
+plot(x, mimr, type = "l", col = "blue", xlab = "GM_IMP", ylab = "M_IMP", ylim = c(0, 0.17))
+abline(h = 0)             
+```
+
+### Survival analysis
+
+The same modification as in the Poisson case is introduced here.
+
+```{r extsurv}
+ef$G0_IMR <- ef$G0_InfD / ef$G0_Births
+fit.c2 <- coxreg(Surv(exit - enter, event) ~ G0_IMR + I(M_birthdate + enter) + parity, data = ef)
+dr.c2 <- drop1(fit.c2, test = "Chisq")
+kable(dr.c2, format = "pandoc", caption = "Analysis of deviance (likelihood ratio tests). Cox regression, extended model.", digits = 5)
+```
+
+# Conclusion
 
 This frequent reappearance of women in dual roles and also the sibling frequency among mothers create dependency problems.
 Two ways to deal with it:
@@ -79,3 +237,5 @@ Two ways to deal with it:
 1. Restrict data.
 
 2. Ignore it.
+
+# References
