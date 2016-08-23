@@ -4,18 +4,18 @@ title: Clustering and intergenerational transfers of infant mortality in 19th ce
 author: "Elisabeth Engberg, Sören Edvinsson, and Göran Broström"
 date: "August 21, 2016"
 output:
-  pdf_document: 
-    fig_height: 4
-    fig_width: 5
-    fig_caption: yes
-  html_document: default
   word_document:
     fig_caption: yes
     fig_height: 4
     fig_width: 5
     reference_docx: word-styles-reference-01.docx
+  pdf_document:
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 5
+  html_document: default
+fontsize: 11pt
 bibliography: cluster.bib
-fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
@@ -91,8 +91,9 @@ A closer look at the data created from *Episodes_file_creator*. It contains one 
 load("ef.rda")
 ef$event <- as.logical(ef$event)
 levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
-ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 145 # 1825 == 0!
-ef <- ef[ef$M_birthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
+ef <- ef[ef$M_birthdate + 1840 > 1826 & ef$M_birthdate + 1840 < 1851, ]
+##ef <- ef[ef$M_birthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 5.5, 25), labels = c("1", "2", "3-5", "6+"))
 ##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "M_birthdate", "enter", "exit", "event")]), type = "pandoc")
 ```
@@ -112,17 +113,23 @@ ef1 <- ef[!duplicated(ef$MotherID), ]
 ##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
 ```
 
-```{r sample, fig.cap = "Distribution of mother birthdates."}
-plot(density(ef1$M_birthdate + 1825), xlab = "Year", main = "", col = "blue")
-abline(h = 0)
+
+```{r sample, fig.cap = "Distribution of mother birth years."}
+barplot(table(floor(ef1$M_birthdate + 1840)), xlab = "Year", main = "", col = "lightblue",
+        ylab = "Frequency")
+##abline(h = 0)
 ```
 
-### Infant mortality by year
 
-```{r imryear}
+### Infant mortality for mothers born 1826--1850
 
+See Figure 2!
+
+```{r imryear2, warning = FALSE, fig.cap = "Infant mortality by one-year intervals, mothers born 1826-1850."}
+years <- seq(1845, 1895, by = 1)
+x <- perstat(with(ef, cbind(0, exit - enter, event, M_birthdate + 1840 + enter)), years, c(0, 1))
+plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality", col = "blue")
 ```
-
 
 ### Grandmothers, mothers and mother-sisters
 
@@ -133,20 +140,17 @@ n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
 x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
 ```
 
-There are `r n.m` mothers and `r n.gm` grandmothers in the data, so obviously there are many sister groups in the data. The distribution of the sizes of sibling groups is shown in Figure 2.
+There are `r n.m` mothers and `r n.gm` grandmothers in the data, so obviously there are many sister groups in the data. The distribution of the sizes of sibling groups is shown in Figure 5.
 
 ```{r sibmoth, fig.cap = "Distribution of sister group sizes."}
 barplot(x, xlab = "Size", ylab = "Frequency")
 ```
 
-
-How many grandmothers are also mothers (and vice versa)?
-
 ```{r countgm}
 m.gm <- with(ef1, sum(unique(GrandmotherID) %in% MotherID)) 
 ```
 
-The answer is `r m.gm`, or `r round(m.gm / n.gm * 100, 2)` per cent of the grandmothers.
+How many grandmothers are also mothers (and vice versa)? The answer is `r m.gm`, or `r round(m.gm / n.gm * 100, 2)` per cent of the grandmothers.
 
 ## Standard results
 
@@ -159,14 +163,8 @@ E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
 $$
 where $R_i$ is total risktime for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risktime is equal to her number of births.)
 
-Formally, $R_i$ is entered into the model as an *offset* after taking logs. The logged value is stored in the variable *expon*. The call to the **R** [@R] function *glm* is
-
-```{r callglm, echo = TRUE}
-fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + 
-               G0_InfD_cat + G0_Births + M_birthdate, 
-             data = ef1, family = poisson)
-```
-The result of this call is presented in two steps: First, *the statistical significance* is calculated and shown, in Table 1, and then the effect sizes are graphically evaluated, in Figure 1.
+Formally, $R_i$ is entered into the model as an *offset* after taking logs. 
+The result is presented in two steps: First, *the statistical significance* is calculated and shown, in Table 1, and then the *effect sizes* are graphically evaluated, in Figure 6.
 
 
 ```{r poisson, results = 'asis'}
@@ -191,17 +189,17 @@ x <- summary(fit.p)$coefficients
 
 So, the likelihood ratio test (LRT) shows that *G0_InfD_cat* is highly *statistically* significant. 
 
-Is it also *practically* significant? Figure 1 shows the *relative* risk increase induced by exactly one infant death by grandmother (GM) and at least two, compared to cases with no infant deaths (baseline). 
+Is it also *practically* significant? Figure 4 shows the *relative* risk increase induced by exactly one infant death by grandmother (GM) and at least two, compared to cases with no infant deaths (baseline). 
 
 ```{r poiseff, fig.cap = "Relative risk increase of infant mortality, compared to no grandmother infant deaths.", fig.width = 4}
 cat0 <- exp(fit.p$coef[1] + 7 * fit.p$coef[5])
 cat1 <- exp(sum(fit.p$coef[1:2]) + 7 * fit.p$coef[5])
 cat2 <- exp(sum(fit.p$coef[c(1, 3)]) + 7 * fit.p$coef[5])
 barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
-        ylim = c(0, 25), ylab = "Relative IMR increase (per cent)")
+        ylim = c(0, 50), ylab = "Relative IMR increase (per cent)")
 ```
 
-The *baseline risk* is `r round(100 * cat0, 2)` per cent. The *relative* risk increase is quite substantial for 2+ grandmother deaths, but the *absolute* increase (`r round(100 * (cat2 - cat0), 2)` per cent) is modest. These calculations are made for a mother born 1825 and her grandmother gave birth to seven children ("average" values). 
+The *baseline risk* is `r round(100 * cat0, 2)` per cent. The *relative* risk increase is quite substantial for 2+ grandmother deaths, but the *absolute* increase (`r round(100 * (cat2 - cat0), 2)` per cent) is modest. These calculations are made for a mother born 1826 and assuming her grandmother gave birth to seven children (the average number in our data). 
 
 ### Survival analysis
 
@@ -237,12 +235,12 @@ kable(dr, format = "pandoc", caption = "Poisson regression, grandmother's IMR. A
 
 The general conclusion is not changed: Grandmother's IMR has a strong influence on infant mortality,  and, indirectly, on her daughter's IMR.
 
-The size of the effect is shown in Figure 3.
+The size of the effect is shown in Figure 8.
 
 ```{r plotimr, fig.cap = "Probability of infant death for mother (M_IMP) by probability of infant death for grandmother (GM_IMP). Poisson regression."}
 x <- seq(0, 1, length = 1000)
 mimr <- with(fit.p2, exp(coefficients[1] + coefficients[2] * x))
-plot(x, mimr, type = "l", col = "blue", xlab = "GM_IMP", ylab = "M_IMP", ylim = c(0, 0.17))
+plot(x, mimr, type = "l", col = "blue", xlab = "GM_IMP", ylab = "M_IMP", ylim = c(0, 0.20))
 abline(h = 0)             
 ```
 
@@ -257,13 +255,14 @@ dr.c2 <- drop1(fit.c2, test = "Chisq")
 kable(dr.c2, format = "pandoc", caption = "Analysis of deviance (likelihood ratio tests). Cox regression, extended model.", digits = 5)
 ```
 
+The regression coefficient for *G0_IMR* is `r round(fit.c2$coef[1], 3)`, highly statistically significant, as seen in Table 4.
+
+**Ska illustreras med en lämplig figur!**
+
 # Conclusion
 
-This frequent reappearance of women in dual roles and also the sibling frequency among mothers create dependency problems.
-Two ways to deal with it:
 
-1. Restrict data.
+# Appendix: Figures
 
-2. Ignore it.
 
 # References
