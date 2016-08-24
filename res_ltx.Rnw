@@ -91,13 +91,61 @@ load("ef.rda")
 ef$event <- as.logical(ef$event)
 levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
 ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
+@
+
+The yearly numbers of births and deaths for the \emph{mothers in the data set} are shown in Figure~\ref{fig:numbirth}.
+
+<<numbirth, fig.cap="Number of births and infant deaths by year in the data set.">>=
+byear <- floor(ef$M_birthdate + ef$enter) + 1840
+x <- table(byear)
+years <- names(x)
+plot(years, as.numeric(x), type = "l", xlab = "Birth/Death year", ylab = "Frequency", col = "blue", ylim = c(0, 1500))
+dyear <- with(ef[ef$event, ], floor(M_birthdate + exit)) + 1840
+y <- table(dyear)
+years <- names(y)
+lines(years, as.numeric(y), type = "l", col = "red")
+abline(h = 0)
+text(1850, 130, "Deaths", col = "red")
+text(1825, 450, "Births", col = "blue")
+@
+
+Corresponding numbers from {\sc Poplink} are shown in Figure~\ref{fig:poplink}.
+
+<<poplink, fig.cap = "Number of births and infant deaths by year in Poplink.">>=
+library(skum)
+per1 <- persons[persons$frsbobtyp == 2 & persons$region == "ske", c("foddat", "doddat")]
+per1$foddat <- as.numeric(tillTid(per1$foddat))
+per1$doddat <- as.numeric(tillTid(per1$doddat))
+per1 <- per1[!is.na(per1$foddat), ]
+per1$event <- with(per1, !is.na(doddat) & doddat - foddat <= 1)
+byear <- floor(per1$foddat)
+x <- table(byear)
+years <- as.numeric(names(x))
+x <- x[years < 1903]
+years <- years[years < 1903]
+plot(years, as.numeric(x), type = "l", col = "blue", xlim = c(1742, 1902), ylab = "Frequency", xlab = "Birth/Death year", ylim = c(0, 1500))
+dyear <- floor(per1$doddat[per1$event])
+y <- table(dyear)
+years <- as.numeric(names(y))
+y <- y[years < 1903]
+years <- years[years < 1903]
+
+lines(years, as.numeric(y), type = "l", col = "red")
+abline(h = 0)
+text(1850, 200, "Deaths", col = "red")
+text(1825, 700, "Births", col = "blue")
+@
+
+The difference betwen the two cases is of course explained by the fact that in the present data file there are restrictions on which births to include: Mother and grandmother present, etc.
+
+<<loaddata2>>=
 ef <- ef[ef$M_birthdate + 1840 > 1826 & ef$M_birthdate + 1840 < 1851, ]
 ##ef <- ef[ef$M_birthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 5.5, 25), labels = c("1", "2", "3-5", "6+"))
 ##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "M_birthdate", "enter", "exit", "event")]), type = "pandoc")
 @
 
-This data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's infant deaths on the number of her daughter's' infant deaths is studied.
+The data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's infant deaths on the number of her daughter's' infant deaths is studied.
 
 \subsubsection*{The covered time period}
 
