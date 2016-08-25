@@ -16,7 +16,7 @@
 \maketitle
 
 <<setup, include=FALSE>>=
-knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 4)
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 3)
 options(show.signif.stars = FALSE)
 library(knitr)
 library(eha)
@@ -87,7 +87,15 @@ A closer look at the data created from {\tt Episodes\_file\_creator}. It contain
 \subsection{Descriptive statistics}
 
 <<loaddata>>=
-load("ef.rda")
+if (!file.exists("ef.rda")){
+    con <- url("http://capa.ddb.umu.se/ef.rda")
+    load(con)
+    save(ef, file = "ef.rda")
+    close(con)
+}else{
+    load("ef.rda")
+}
+
 ef$event <- as.logical(ef$event)
 levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
 ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
@@ -223,7 +231,7 @@ fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + M_birth
 dr <- drop1(fit.p, test = "Chisq")
 @
 
-<<poisp, fig.cap = "LRT p-values for the covariates.">>=
+<<poisp, fig.cap = 'LRT p-values for the covariates. Dashed line is significance limit with  "mass significance" correction.'>>=
 pv <- dr[[5]][-1]
 names(pv) <- c("G0InfD_cat", "G0_Births", "M_birtdate")
 xp <- sort(pv)
@@ -263,12 +271,20 @@ So, the likelihood ratio test (LRT) shows that {\tt G0\_InfD\_cat} is highly \em
 
 Is it also \emph{practically} significant? Figure~\ref{fig:poiseff} shows the \emph{relative} risk increase induced by exactly one infant death by grandmother (GM) and at least two, compared to cases with no infant deaths (baseline). 
 
-<<poiseff, fig.cap = "Relative risk increase of infant mortality, compared to no grandmother infant deaths.", fig.width = 4>>=
+<<poiseff, fig.cap = "Relative risk increase of infant mortality, compared to no grandmother infant deaths (left) and grandmother births compared to two births(right).">>=
 cat0 <- exp(fit.p$coef[1] + 7 * fit.p$coef[5])
 cat1 <- exp(sum(fit.p$coef[1:2]) + 7 * fit.p$coef[5])
 cat2 <- exp(sum(fit.p$coef[c(1, 3)]) + 7 * fit.p$coef[5])
+oldpar <- par(mfrow = c(1, 2))
 barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
-        ylim = c(0, 50), ylab = "Relative IMR increase (per cent)")
+        ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+x <- 2:20
+y <- exp(fit.p$coef[1] + x * fit.p$coef[4])
+y <- y / y[1]
+plot(x, 100 * (y - 1), type = "h", xlab = "G0_Births", ylab = "Relative IMR (per cent)", col = "blue", 
+     main = "", ylim = c(-41, 1))
+points(2, 0, col = "red")
+abline(h = 0)
 @
 
 The \emph{baseline risk} is \Sexpr{round(100 * cat0, 2)} per cent. The \emph{relative} risk increase is quite substantial for 2+ grandmother deaths, but the \emph{absolute} increase 
@@ -294,7 +310,7 @@ ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.",
 
 The statistical significance of grandmother's infant deaths is obvious (Table~\ref{tab:surv}). The estimated relative risks are best shown by plotting the \emph{cumulative hazards} for the three groups (Figure~\ref{fig:relcumhaz}).
 
-<<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.">>=
+<<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 5>>=
 fit.str <- coxreg(Surv(exit - enter, event) ~ strata(G0_InfD_cat) + I(G0_Births - 7) + I(M_birthdate + enter) + parity, data = ef)
 plot(fit.str, col = 1:3, lty = 1:3, xlab = "Age", ylab = "Cumulative hazards.")
 @
