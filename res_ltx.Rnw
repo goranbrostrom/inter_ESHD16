@@ -211,14 +211,38 @@ E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
 where $R_i$ is total risktime for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risktime is equal to her number of births.)
 
 Formally, $R_i$ is entered into the model as an \emph{offset} after taking logs. 
-The result is presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Table~\ref{tab:poisson}, and then the \emph{effect sizes} are graphically evaluated, in Figure~\ref{fig:poiseff}.
+The result is presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Figure~\ref{fig:poisp}.
+The solid horizontal red line at 5\% is our (conventionally) chosen nominal limit for statistical significance. The dashed line is the limit that should be respected in honor of the \emph{mass significance} problem. The first (leftmost) covariate, \emph{G0InfD\_ cat}, is  clearly statistically significant, while \emph{G0\_Births} is just barely significant. \emph{M\_birthdate} is clearly out. 
+%Table~\ref{tab:poisson}, 
+Second, the \emph{effect sizes} are graphically evaluated in Figure~\ref{fig:poiseff}. 
 
 
-<<poisson, results = 'asis'>>=
+<<poisson>>=
 options(digits = 8)
 fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + M_birthdate, data = ef1, family = poisson)
 dr <- drop1(fit.p, test = "Chisq")
+@
 
+<<poisp, fig.cap = "LRT p-values for the covariates.">>=
+pv <- dr[[5]][-1]
+names(pv) <- c("G0InfD_cat", "G0_Births", "M_birtdate")
+xp <- sort(pv)
+n <- length(xp)
+mplin <- (1:n)/n * 0.05
+plot(1:3, xp, type = "h", axes = FALSE, xlab = "Covariates", ylab = "p-value")
+points((1:3)[xp < mplin], xp[xp < mplin], col = "darkgreen", pch = 19, cex = 2)
+points((1:3)[xp >= mplin], xp[xp >= mplin], col = "red", pch = 18, cex = 2)
+axis(1, at = 1:n, labels = names(xp))
+axis(2, at = c(0, 0.05, 0.2), las = 1, labels = c("0", "5%", "20%"))
+box()
+abline(h = 0.05, col = "red", lty = 1)
+abline(h = 0)
+lines(1:3, (1:n) / n * 0.05, col = "magenta", lty = 2)
+##barplot(sort(pv))
+
+@
+
+<<poist, results = "asis", include = FALSE>>=
 xtable(dr, caption = "Analysis of deviance (likelihood ratio tests). Poisson regression.", 
        label = "tab:poisson", digits = c(0, 0, 4, 4, 4, 4))
 x <- summary(fit.p)$coefficients
