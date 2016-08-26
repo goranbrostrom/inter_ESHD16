@@ -5,9 +5,11 @@
 \usepackage{amssymb}
 \usepackage{natbib}
 
+\usepackage[tablesonly]{endfloat}
+
 \bibliographystyle{apalike}
 
-\title{Clustering and intergenerational transfers of infant mortality in 19th century
+\title{Intergenerational transfers of infant mortality in 19th century
   northern Sweden}
 \author{Elisabeth Engberg, Sören Edvinsson, and Göran Broström}
 
@@ -16,7 +18,7 @@
 \maketitle
 
 <<setup, include=FALSE>>=
-knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 3)
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 3.5, cache = TRUE)
 options(show.signif.stars = FALSE)
 library(knitr)
 library(eha)
@@ -82,9 +84,10 @@ analyses.
 
 A closer look at the data created from {\tt Episodes\_file\_creator}. It contains one record per birth and is used for the suvival analysis approach, where the influence of grandmother's infant deaths on her grandchild's survival chances is studied.
 
-\section{Results}
+\section{Data}
 
-\subsection{Descriptive statistics}
+We use the data set that is created from the IDS data base with a standard extraction script \citep{lq16}.
+In the analyses presented here we are using {\bf R}, a free software environment for statistical computing and graphics \citep{R}.
 
 <<loaddata>>=
 if (!file.exists("ef.rda")){
@@ -95,31 +98,43 @@ if (!file.exists("ef.rda")){
 }else{
     load("ef.rda")
 }
-
 ef$event <- as.logical(ef$event)
 levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
-ef$M_birthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
+ef$mBirthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
 @
 
-The yearly numbers of births and deaths for the \emph{mothers in the data set} are shown in Figure~\ref{fig:numbirth}.
+Some variables need to be redefined, centered and categorized, and the data set needs to be restricted in calendar time. The study is limited to mothers born between  Sunday,  January 1, 1826 and Tuesday, December 31, 1850. \emph{Grandmother's number of births} is categorized into \emph{"2", "3", "4-6", "7+"} (named \emph{gmBirths}), and \emph{Mother's age at child birth} is centered around 30 (named \emph{mAge}), close to the mean age at delivery. \emph{Birth\_order} is categorized into \emph{"1", "2", "3", "4-6", "7+"} (named \emph{parity}) and \emph{Mother's birthdate} is centered around Wednesday, January 1, 1840 (named(\emph{mBirthdate}). The new variable \emph{gmIMR} is defined as the ratio between grandmother's number of infant deaths and her number of births, or $\text{G0\_InfD} / \text{G0\_Births}$.
 
-<<numbirth, fig.cap="Number of births and infant deaths by year in the data set.">>=
-byear <- floor(ef$M_birthdate + ef$enter) + 1840
+<<redefine>>=
+ef$gmBirths <- cut(ef$G0_Births, c(1, 2.5, 3.5, 6.5, 25), labels = c("2", "3", "4-6", "7+"))
+ef$gmDeaths <- ef$G0_InfD_cat
+ef$gmIMR <- ef$G0_InfD / ef$G0_Births
+ef$mAge <- ef$Motheragebirth - 30
+ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 3.5, 6.5, 25), labels = c("1", "2", "3", "4-6", "7+"))
+## ef$mBirthdate : See above!
+@
+
+\section{Results}
+
+\subsection{Descriptive statistics of the IDS extraction}
+
+The yearly numbers of births and deaths for the \emph{mothers in the data set} and, as a comparison, for the data in {\sc Poplink},  are shown in Figure~\ref{fig:numbirth}.
+
+<<numbirth, fig.cap="Number of births and infant deaths by year.">>=
+oldpar = par(mfrow = c(1, 2))
+byear <- floor(ef$mBirthdate + ef$enter) + 1840
 x <- table(byear)
 years <- names(x)
-plot(years, as.numeric(x), type = "l", xlab = "Birth/Death year", ylab = "Frequency", col = "blue", ylim = c(0, 1500))
-dyear <- with(ef[ef$event, ], floor(M_birthdate + exit)) + 1840
+plot(years, as.numeric(x), type = "l", xlab = "Birth/Death year", ylab = "Frequency", col = "blue", ylim = c(0, 1500), main = "Present data")
+dyear <- with(ef[ef$event, ], floor(mBirthdate + exit)) + 1840
 y <- table(dyear)
 years <- names(y)
 lines(years, as.numeric(y), type = "l", col = "red")
 abline(h = 0)
 text(1850, 130, "Deaths", col = "red")
 text(1825, 450, "Births", col = "blue")
-@
 
-Corresponding numbers from {\sc Poplink} are shown in Figure~\ref{fig:poplink}.
-
-<<poplink, fig.cap = "Number of births and infant deaths by year in Poplink.">>=
+## POPLINK:
 library(skum)
 per1 <- persons[persons$frsbobtyp == 2 & persons$region == "ske", c("foddat", "doddat")]
 per1$foddat <- as.numeric(tillTid(per1$foddat))
@@ -131,7 +146,7 @@ x <- table(byear)
 years <- as.numeric(names(x))
 x <- x[years < 1903]
 years <- years[years < 1903]
-plot(years, as.numeric(x), type = "l", col = "blue", xlim = c(1742, 1902), ylab = "Frequency", xlab = "Birth/Death year", ylim = c(0, 1500))
+plot(years, as.numeric(x), type = "l", col = "blue", xlim = c(1742, 1902), ylab = "",  xlab = "Birth/Death year", ylim = c(0, 1500), main = "POPLINK")
 dyear <- floor(per1$doddat[per1$event])
 y <- table(dyear)
 years <- as.numeric(names(y))
@@ -142,48 +157,46 @@ lines(years, as.numeric(y), type = "l", col = "red")
 abline(h = 0)
 text(1850, 200, "Deaths", col = "red")
 text(1825, 700, "Births", col = "blue")
+par(oldpar)
 @
 
-The difference betwen the two cases is of course explained by the fact that in the present data file there are restrictions on which births to include: Mother and grandmother present, etc.
+The difference betwen the two data sets is of course explained by the fact that in the present data file there are restrictions on which births to include: Mother and grandmother present, grandmother must have at least two children, etc.
 
 <<loaddata2>>=
-ef <- ef[ef$M_birthdate + 1840 > 1826 & ef$M_birthdate + 1840 < 1851, ]
-##ef <- ef[ef$M_birthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 5.5, 25), labels = c("1", "2", "3-5", "6+"))
-##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "M_birthdate", "enter", "exit", "event")]), type = "pandoc")
+ef <- ef[ef$mBirthdate + 1840 > 1826 & ef$mBirthdate + 1840 < 1851, ]
+##ef <- ef[ef$mBirthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "mBirthdate", "enter", "exit", "event")]), type = "pandoc")
 @
 
-The data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's infant deaths on the number of her daughter's' infant deaths is studied.
-
-\subsubsection*{The covered time period}
-
-See Figure~\ref{fig:sample} for the distribution of mothers' birth dates.
+%The data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's %infant deaths on the number of her daughter's' infant deaths is studied.
 
 <<aggrfile>>=
 indx <- tapply(ef$MotherID, ef$MotherID)
-ef$M_Births <- with(ef, tapply(MotherID, MotherID, length)[indx])
-ef$M_Deaths <- with(ef, tapply(event, MotherID, sum)[indx])
-ef$M_expon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
+ef$mBirths <- with(ef, tapply(MotherID, MotherID, length)[indx])
+ef$mDeaths <- with(ef, tapply(event, MotherID, sum)[indx])
+ef$Mexpon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
 ef1 <- ef[!duplicated(ef$MotherID), ]
 ##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
 @
 
+\subsubsection*{The covered time period}
 
-<<sample, fig.cap = "Distribution of mother birth years.">>=
-barplot(table(floor(ef1$M_birthdate + 1840)), xlab = "Year", main = "", 
+Our study sample consists of all mothers born 1826--1950. The distribution of their birth years and their infant mortality (by year of child death) are shown in  Figure~\ref{fig:sample}.
+
+
+
+<<sample, fig.cap = "Distribution of mother birth years and mothers' infant mortality rate by infant death year.">>=
+oldpar <- par(mfrow = c(1, 2))
+barplot(table(floor(ef1$mBirthdate + 1840)), xlab = "Year", main = "", 
 col = "lightblue",ylab = "Frequency")
 ##abline(h = 0)
-@
 
-
-\subsubsection*{Infant mortality for mothers born 1826--1850}
-
-See Figure~\ref{fig:imryear2}!
-
-<<imryear2, warning = FALSE, fig.cap = "Infant mortality by one-year intervals, mothers born 1826-1850.">>=
+## IMR:
 years <- seq(1845, 1895, by = 1)
-x <- perstat(with(ef, cbind(0, exit - enter, event, M_birthdate + 1840 + enter)), years, c(0, 1))
+x <- perstat(with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter)), years, c(0, 1))
 plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality", col = "blue")
+par(oldpar)
 @
 
 \subsubsection*{Grandmothers, mothers and mother--sisters}
@@ -195,7 +208,9 @@ n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
 x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
 @
 
-There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so obviously there are many sister groups in the data. The distribution of the sizes of sibling groups is shown in Figure~\ref{fig:sibmoth}.
+There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so obviously there are many sister groups among mothers in the data. This fact induces dependencies in the data set, which may either be a problem (using methods assuming independence), bau it may also be possible to turn this fact into an advantage (using mixed effects models and think of intergenerational transfer as similarity between siblings). In the latter case the explanatory variable \emph{grandmother's IMR} is replaced by clustering on grandmother. This scenario is investigated in the section about \emph{Extended results}. 
+
+The distribution of the sizes of sibling groups is shown in Figure~\ref{fig:sibmoth}.
 
 <<sibmoth, fig.cap = "Distribution of sister group sizes.">>=
 barplot(x, xlab = "Size", ylab = "Frequency")
@@ -217,26 +232,26 @@ The expected value of the number of infant deaths $D_i$ for mother No. $i, \, i 
 E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
 \end{equation*}
 where $R_i$ is total risktime for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risktime is equal to her number of births.)
-
 Formally, $R_i$ is entered into the model as an \emph{offset} after taking logs. 
-The result is presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Figure~\ref{fig:poisp}.
-The solid horizontal red line at 5\% is our (conventionally) chosen nominal limit for statistical significance. The dashed line is the limit that should be respected in honor of the \emph{mass significance} problem. The first (leftmost) covariate, \emph{G0InfD\_ cat}, is  clearly statistically significant, while \emph{G0\_Births} is just barely significant. \emph{M\_birthdate} is clearly out. 
+
+The results are presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Figure~\ref{fig:poisp}.
+The solid horizontal red line at 5\% is our (conventionally) chosen nominal limit for statistical significance. The dashed line is the limit that should be respected in honor of the \emph{multiple comparisons} situation \citep{holm79}. The first (leftmost) covariate, \emph{G0InfD\_ cat}, is  clearly statistically significant, while \emph{G0\_Births} is just barely significant. \emph{M\_birthdate} is clearly out. 
 %Table~\ref{tab:poisson}, 
 Second, the \emph{effect sizes} are graphically evaluated in Figure~\ref{fig:poiseff}. 
 
 
 <<poisson>>=
 options(digits = 8)
-fit.p <- glm(M_Deaths ~ offset(log(M_expon)) + G0_InfD_cat + G0_Births + M_birthdate, data = ef1, family = poisson)
+fit.p <- glm(mDeaths ~ offset(log(Mexpon)) + gmDeaths + gmBirths + mBirthdate, data = ef1, family = poisson)
 dr <- drop1(fit.p, test = "Chisq")
 @
 
-<<poisp, fig.cap = 'LRT p-values for the covariates. Dashed line is significance limit with  "mass significance" correction.'>>=
+<<poisp, fig.cap = 'LRT p-values for the covariates. Dashed line is significance limit with  "multiple comparisons" correction. '>>=
 pv <- dr[[5]][-1]
-names(pv) <- c("G0InfD_cat", "G0_Births", "M_birtdate")
+names(pv) <- c("gmDeaths", "gmBirths", "mBirthdate")
 xp <- sort(pv)
 n <- length(xp)
-mplin <- (1:n)/n * 0.05
+mplin <- 1/(n:1) * 0.05
 plot(1:3, xp, type = "h", axes = FALSE, xlab = "Covariates", ylab = "p-value")
 points((1:3)[xp < mplin], xp[xp < mplin], col = "darkgreen", pch = 19, cex = 2)
 points((1:3)[xp >= mplin], xp[xp >= mplin], col = "red", pch = 18, cex = 2)
@@ -267,28 +282,34 @@ x <- summary(fit.p)$coefficients
 ##summary(fit)
 @
 
-So, the likelihood ratio test (LRT) shows that {\tt G0\_InfD\_cat} is highly \emph{statistically} significant. 
+So, the likelihood ratio test (LRT) shows that {\tt gmDeaths} and \emph{gmBirths} are highly \emph{statistically} significant in the model. 
 
-Is it also \emph{practically} significant? Figure~\ref{fig:poiseff} shows the \emph{relative} risk increase induced by exactly one infant death by grandmother (GM) and at least two, compared to cases with no infant deaths (baseline). 
+Are they also \emph{practically} significant? Figure~\ref{fig:poiseff} shows the \emph{expected risks} of infant death by the number of grandmother's deaths and the number of her births. 
 
-<<poiseff, fig.cap = "Relative risk increase of infant mortality, compared to no grandmother infant deaths (left) and grandmother births compared to two births(right).">>=
-cat0 <- exp(fit.p$coef[1] + 7 * fit.p$coef[5])
-cat1 <- exp(sum(fit.p$coef[1:2]) + 7 * fit.p$coef[5])
-cat2 <- exp(sum(fit.p$coef[c(1, 3)]) + 7 * fit.p$coef[5])
+<<poiseff, fig.cap = "Infant mortality by grandmother's number of infant deaths (left) and grandmother's number of births(right). Comparisons made at reference value of other covariates.">>=
+cat0 <- exp(fit.p$coef[1])
+cat1 <- exp(sum(fit.p$coef[1:2]))
+cat2 <- exp(sum(fit.p$coef[c(1, 3)]))
 oldpar <- par(mfrow = c(1, 2))
-barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
-        ylim = c(0, 50), ylab = "Relative IMR (per cent)")
-x <- 2:20
-y <- exp(fit.p$coef[1] + x * fit.p$coef[4])
-y <- y / y[1]
-plot(x, 100 * (y - 1), type = "h", xlab = "G0_Births", ylab = "Relative IMR (per cent)", col = "blue", 
-     main = "", ylim = c(-41, 1))
-points(2, 0, col = "red")
-abline(h = 0)
+##barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+  ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+
+barplot(100 * c(cat0, cat1, cat2), names.arg = c("0", "1", "2+"), 
+        ylim = c(0, 9), ylab = "IMR (per cent)", main = "No. of grandmother's deaths")
+cat0 <- exp(fit.p$coef[1])
+cat1 <- exp(sum(fit.p$coef[c(1, 4)]))
+cat2 <- exp(sum(fit.p$coef[c(1, 5)]))
+cat3 <- exp(sum(fit.p$coef[c(1, 6)]))
+
+##barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+  ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+
+barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"), 
+    ylab = "IMR (per cent)", main = "No. of grandmother's births")
+
 @
 
-The \emph{baseline risk} is \Sexpr{round(100 * cat0, 2)} per cent. The \emph{relative} risk increase is quite substantial for 2+ grandmother deaths, but the \emph{absolute} increase 
-(\Sexpr{round(100 * (cat2 - cat0), 2)} per cent) is modest. These calculations are made for a mother born 1826 and assuming her grandmother gave birth to seven children (the average number in our data). 
+These calculations are made for a mother born January 1, 1826. 
 
 \subsubsection*{Survival analysis}
 
@@ -299,10 +320,10 @@ analysis. The difference is that instead of mother's birthdate, the
 infant's birthdate is used (no big difference). 
 
 <<surv,results='asis'>>=
-ef$G0InfD <- ef$G0_InfD_cat
-ef$G0Births.c <- ef$G0_Births - 7
-ef$childBirthdate <- ef$M_birthdate + ef$enter
-fit.c <- coxreg(Surv(exit - enter, event) ~ G0InfD + G0Births.c + childBirthdate + parity, data = ef)
+##ef$G0InfD <- ef$G0_InfD_cat
+##ef$G0Births.c <- ef$G0_Births -
+ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.c <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths + childBirthdate + parity, data = ef)
 dr.c <- drop1(fit.c, test = "Chisq")
 ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.", 
        label = "tab:surv", digits = 4)
@@ -311,7 +332,7 @@ ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.",
 The statistical significance of grandmother's infant deaths is obvious (Table~\ref{tab:surv}). The estimated relative risks are best shown by plotting the \emph{cumulative hazards} for the three groups (Figure~\ref{fig:relcumhaz}).
 
 <<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 5>>=
-fit.str <- coxreg(Surv(exit - enter, event) ~ strata(G0_InfD_cat) + I(G0_Births - 7) + I(M_birthdate + enter) + parity, data = ef)
+fit.str <- coxreg(Surv(exit - enter, event) ~ strata(G0_InfD_cat) + I(G0_Births - 7) + I(mBirthdate + enter) + parity, data = ef)
 plot(fit.str, col = 1:3, lty = 1:3, xlab = "Age", ylab = "Cumulative hazards.")
 @
 
@@ -324,8 +345,8 @@ There is an evident deviation from the assumption of \emph{proportional hazards}
 It turns out that the model fit to data is somewhat better with \emph{number of births} as the offset (log scale). Also showing a slight improvement is to use \emph{grandmother's IMR} as explanatory variable rather than her \emph{absolute number of deaths}. The IMR is defined as the number of infant deaths divided by the number of births. These changes also implies that the comparison \emph{mother vs. grandmother} happens on a probability scale rather than on the intensity one.
 
 <<refinedpois, results = "asis">>=
-ef1$G0_IMR <- ef1$G0_InfD / ef1$G0_Births
-fit.p2 <- glm(M_Deaths ~ offset(log(M_expon)) + G0_IMR + M_birthdate + parity, data = ef1, family = poisson)
+
+fit.p2 <- glm(mDeaths ~ offset(log(Mexpon)) + gmIMR + mBirthdate + parity, data = ef1, family = poisson)
 dr <- drop1(fit.p2, test = "Chisq")
 xtable(dr, caption = "Poisson regression, grandmother's IMR. Analysis of deviance.", digits = 5, label = 'tab:refinedpois')
 @
@@ -346,21 +367,20 @@ abline(h = 0)
 The same modification as in the Poisson case is introduced here.
 
 <<extsurv,results='asis'>>=
-ef$G0.IMR <- ef$G0_InfD / ef$G0_Births
-ef$childBirthdate <- ef$M_birthdate + ef$enter
-fit.c2 <- coxreg(Surv(exit - enter, event) ~ G0.IMR + childBirthdate + parity, data = ef)
+ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.c2 <- coxreg(Surv(exit - enter, event) ~ gmIMR + childBirthdate + parity, data = ef)
 dr.c2 <- drop1(fit.c2, test = "Chisq")
 ltx(fit.c2, dr = dr.c2, caption = "Cox regression, extended model.", digits = 4, label = "tab:extsurv")
 @
 
-The regression coefficient for {\tt G0\_IMR} is \Sexpr{round(fit.c2$coef[1], 3)}, highly statistically significant, as seen in Table~\ref{tab:extsurv}. The other covariates are of less importance.
+The regression coefficient for {\tt gmIMR} is \Sexpr{round(fit.c2$coef[1], 3)}, highly statistically significant, as seen in Table~\ref{tab:extsurv}. The other covariates are of less importance.
 
 The Weibull model usually fits infant mortality data well. Let us check (Table~\ref{tab:weibsurv}).
 
 <<weibsurv,results='asis'>>=
 ##ef$G0.IMR <- ef$G0_InfD / ef$G0_Births
-##ef$childBirthdate <- ef$M_birthdate + ef$enter
-fit.w <- phreg(Surv(exit - enter, event) ~ G0.IMR + childBirthdate + parity, data = ef)
+##ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.w <- phreg(Surv(exit - enter, event) ~ gmIMR + childBirthdate + parity, data = ef)
 dr.w <- drop1(fit.w, test = "Chisq")
 ltx(fit.w, dr = dr.w, caption = "Weibull regression, extended model.", digits = 4, label = "tab:weibsurv")
 @
