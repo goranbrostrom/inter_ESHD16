@@ -1,6 +1,6 @@
 #!/bin/bash -eu
-R --no-restore -e "library(knitr); knit('imrhaz.Rnw')"
-R CMD pdflatex imrhaz.tex
-bibtex imrhaz
-pdflatex imrhaz
-pdflatex imrhaz
+R --no-restore -e "library(knitr); knit('res_ltx.Rnw')"
+R CMD pdflatex res_ltx.tex
+bibtex res_ltx
+pdflatex res_ltx
+pdflatex res_ltx
