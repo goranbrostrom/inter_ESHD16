@@ -6,7 +6,7 @@
 \usepackage{natbib}
 
 \usepackage[tablesonly]{endfloat}
-
+\renewcommand{\efloatseparator}{\mbox{}}
 \bibliographystyle{apalike}
 
 \title{Intergenerational transfers of infant mortality in 19th century
@@ -109,7 +109,7 @@ Some variables need to be redefined, centered and categorized, and the data set 
 ef$gmBirths <- cut(ef$G0_Births, c(1, 2.5, 3.5, 6.5, 25), labels = c("2", "3", "4-6", "7+"))
 ef$gmDeaths <- ef$G0_InfD_cat
 ef$gmIMR <- ef$G0_InfD / ef$G0_Births
-ef$mAge <- ef$Motheragebirth - 30
+ef$mAge <- ef$enter - 30
 ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 3.5, 6.5, 25), labels = c("1", "2", "3", "4-6", "7+"))
 ## ef$mBirthdate : See above!
 @
@@ -246,15 +246,15 @@ fit.p <- glm(mDeaths ~ offset(log(Mexpon)) + gmDeaths + gmBirths + mBirthdate, d
 dr <- drop1(fit.p, test = "Chisq")
 @
 
-<<poisp, fig.cap = 'LRT p-values for the covariates. Dashed line is significance limit with  "multiple comparisons" correction. '>>=
+<<poisp, fig.cap = 'LRT p-values for the covariates, Poisson regression. Dashed line is significance limit with  "multiple comparisons" correction.'>>=
 pv <- dr[[5]][-1]
 names(pv) <- c("gmDeaths", "gmBirths", "mBirthdate")
 xp <- sort(pv)
 n <- length(xp)
 mplin <- 1/(n:1) * 0.05
 plot(1:3, xp, type = "h", axes = FALSE, xlab = "Covariates", ylab = "p-value")
-points((1:3)[xp < mplin], xp[xp < mplin], col = "darkgreen", pch = 19, cex = 2)
-points((1:3)[xp >= mplin], xp[xp >= mplin], col = "red", pch = 18, cex = 2)
+points((1:3)[xp < mplin], xp[xp < mplin], col = "darkgreen", pch = 19, cex = 1.5)
+points((1:3)[xp >= mplin], xp[xp >= mplin], col = "red", pch = 18, cex = 1.5)
 axis(1, at = 1:n, labels = names(xp))
 axis(2, at = c(0, 0.05, 0.2), las = 1, labels = c("0", "5%", "20%"))
 box()
@@ -309,30 +309,84 @@ barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"),
 
 @
 
-These calculations are made for a mother born January 1, 1826. 
 
 \subsubsection*{Survival analysis}
 
-Here the full data set is used, that is, the infants are the units of
-analysis. The {\bf R} package {\tt eha} \citep{eha, ehar} is used, and the
+The {\bf R} package {\tt eha} \citep{eha, ehar} is used, and the
 explanatory variables are almost the same as in the Poisson regression
 analysis. The difference is that instead of mother's birthdate, the
-infant's birthdate is used (no big difference). 
+infant's birthdate is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 31. Other covariates, \emph{parity}, \emph{infant's birthdate}, etc. are omitted, since they do not contribute much to the model. 
 
 <<surv,results='asis'>>=
 ##ef$G0InfD <- ef$G0_InfD_cat
 ##ef$G0Births.c <- ef$G0_Births -
+ef$mAge <- ef$enter - 32
+ef$mAge2 <- (ef$mAge)^2
+ef$mAge3 <- (ef$mAge)^3
 ef$childBirthdate <- ef$mBirthdate + ef$enter
-fit.c <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths + childBirthdate + parity, data = ef)
+fit.c <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths + #childBirthdate + 
+                    #parity + 
+                    mAge + mAge2, data = ef)
 dr.c <- drop1(fit.c, test = "Chisq")
 ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.", 
        label = "tab:surv", digits = 4)
 @
 
-The statistical significance of grandmother's infant deaths is obvious (Table~\ref{tab:surv}). The estimated relative risks are best shown by plotting the \emph{cumulative hazards} for the three groups (Figure~\ref{fig:relcumhaz}).
+The standard form of results is shown in Table~\ref{tab:surv}. 
+The statistical significance of involved covariates is found in Figure~\ref{fig:siginv}.
+
+<<siginv, fig.cap = 'LRT p-values for the covariates, Cox regression. Dashed line is significance limit with "multiple comparisons" correction.'>>=
+p <- numeric(3)
+p[1] <- dr.c[[4]][2]
+p[2] <- dr.c[[4]][3]
+fit.cb <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths, data = ef)
+cstat <- 2 * (fit.c$loglik[2] - fit.cb$loglik[2])
+p[3] <- pchisq(cstat, df = 2, lower.tail = FALSE)
+names(p) <- c("gmDeaths", "gmBirths", "mAge")
+p <- sort(p)
+mplin <- 1 / (n:1) * 0.05
+plot(1:3, p, type = "h", ylab = "p-value", xlab = "Covariates", axes = FALSE, ylim = c(0, 0.055))
+axis(1, at = 1:3, labels = names(p))
+axis(2, at = c(0, 0.05), labels = c("0", "5%"), las = 1)
+abline(h = 0.05, col = "red")
+points(1:3, p, col = "darkgreen", pch = 19, cex = 1.5)
+lines(1:3, mplin, lty = 2, col = "magenta")
+box()
+abline(h = 0)     
+@
+
+The effects are shown in Figure~\ref{fig:effstcox}
+
+<<effstcox, fig.cap = "Effects of included covariates, Cox regression.">>=
+oldpar <- par(mfrow = c(1, 3))
+##gmDeaths:
+c0 <- 0
+c1 <- 100 * (exp(fit.c$coef[1]) - 1)
+c2 <- 100 * (exp(fit.c$coef[2]) - 1)
+barplot(c(c0, c1, c2), names.arg = c("0", "1", "2+"), main = "No. of GM deaths", ylab = "Rel. Risk increase (per cent)", ylim = c(0, 60))
+##gmBirths:
+c0 <- 0
+c1 <- 100 * (exp(fit.c$coef[3]) - 1)
+c2 <- 100 * (exp(fit.c$coef[4]) - 1)
+c3 <- 100 * (exp(fit.c$coef[5]) - 1)
+barplot(c(c0, c1, c2, c3), names.arg = c("2", "3", "4-6", "7+"), main = "No. of GM births", ylab = "Rel. Risk increase (per cent)", ylim = c(0, 60))
+## mAge:
+x <- seq(20, 45, length = 25)
+y <- exp(fit.c$coef[6] * (x - 32) + fit.c$coef[7] * (x - 32)^2) - 1
+plot(x, 100 * y, xlab = "Age", type = "h", main = "Mother's age", ylab = "Rel. Risk increase (per cent)", axes = FALSE, ylim = c(0, 60))
+axis(1, at = c(20, 25, 32, 40, 45))
+axis(2)
+box()
+abline(h = 0)
+@
+
+
+
+
+The estimated relative risks are best shown by plotting the \emph{cumulative hazards} for the three groups (Figure~\ref{fig:relcumhaz}).
 
 <<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 5>>=
-fit.str <- coxreg(Surv(exit - enter, event) ~ strata(G0_InfD_cat) + I(G0_Births - 7) + I(mBirthdate + enter) + parity, data = ef)
+fit.str <- coxreg(Surv(exit - enter, event) ~ strata(gmDeaths) + gmBirths + mAge + mAge2, data = ef)
 plot(fit.str, col = 1:3, lty = 1:3, xlab = "Age", ylab = "Cumulative hazards.")
 @
 
