@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt]{article}
+\documentclass[a4paper,12pt]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
@@ -18,7 +18,7 @@
 \maketitle
 
 <<setup, include=FALSE>>=
-knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 3.5, cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 3.5, cache = FALSE)
 options(show.signif.stars = FALSE)
 library(knitr)
 library(eha)
@@ -26,46 +26,131 @@ library(xtable)
 @
 
 \section{Introduction}
+For more than 25 years it has been observed in numerous studies of
+historical and contemporary populations that infant deaths seem to be
+clustered into high-risk families. In a study of infant mortality in two
+regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
+found that fifty per cent of the infant deaths were found in 
+approximately 10 per cent of the families. Despite the fact that infant
+mortality rates shifted over time, from about 200 per thousand in the
+beginning of the 
+nineteenth century to approximately 100 per thousand in the 1890s, most
+families never 
+experienced an infant death. About 67 per cent of all women that gave birth
+would see their offspring survive their first year of life regardless of
+how many children they conceived. Various explanations have been proposed
+to this apparently complex phenomenon, including different aspects of
+inter-generational transmissions: genetic, cultural, socio-economic and
+environmental factors or a combination of these. Today there seems to be
+consensus that the unequal distribution of infant death among families is a
+complex interplay of different factors, which can be difficult to identify
+and separate.  
+
+Although the clustering of infant mortality appears to be a salient
+phenomenon throughout history, there are also major regional differences in
+the strength of the intergenerational transmission of infant
+mortality. While in certain regions the mortality history of infants is
+strongly correlated with the survival of infants in the previous
+generation, in other regions this effect is weak or completely absent
+\citep{belr08}. \citet{vande12} suggests that this can be
+attributed to differences in local culture and family systems, but also
+proposes the hypothesis that the variations also might be related to strong
+local variants in gene defects. In practice, regional differences could
+also be related to the fact that most studies focus on a limited number of
+rather small regions, and that different studies thus are hard to compare
+due to differences in methodology, both in terms of database management and
+in terms of statistical analysis. 
 
 \section{Area}
 
- The area under study is the Skellefteå region on the Gulf of Bothnia. 
-The analyses of the Skellefteå region cover the period 1831–1900.
+The area under study is the Skellefteå region in the province of
+Västerbotten in the northern part of Sweden, and analyses cover the period
+1831--1900. The region was vast, and consisted at the outset of the study of
+one large rural parish, Skellefteå parish. In 1875, the northern part,
+Byske was detached into a separate administrative unit, but the population
+is nevertheless included in the study until 1900. Before 1834 the analyses
+also include the population in Jörn and Norsjö parishes, which until then
+were part of Skellefteå parish.  The region was large, both in terms of
+area and of population. With an area of about 1700 square miles,
+Skellefteå was considerably larger than most rural parishes in Sweden. It
+was considered a one-day’s journey to travel from the northern to the
+southern border, and a ride from the coast to the more remote and sparsely
+populated parts of the parish in the west could take even longer,
+especially in wintertime. The main part of the population was, however,
+concentrated in the coastal area and in river valleys.  In the early 19th
+century the population was around 6900, and it increased rapidly during the
+first half of the century. By 1850 it had reached to about 14000 and at the
+turn of the century it had further doubled. Despite the large increase in
+population, which was mainly the result of a high natural growth, the
+population density on the whole remained low \citep{as94}.
 
-The Skellefteå region consists of the parish of Skellefteå and the parish of
-Byske. Byske was a part of Skellefteå parish until 1875. For the remaining
-part of the century it was an independent parish. Two other parishes which
-became independent in the early nineteenth century, Jörn and Norsjö, were
-incorporated into the parish of Skellefteå for a number of years at the be-
-ginning of the century and are included in the analyses for these years. The
-region is situated in the province of Västerbotten in the northern part of
-Sweden on the Gulf of Bothnia. The parish was one of the largest parishes in
-Sweden both in area and in population during the nineteenth century. The
-population began to increase slowly during the seventeenth and eighteenth
-centuries. By the turn of the nineteenth century, about 6 900 inhabitants
-lived in the parish. The population of the parish increased rapidly during the
-first half of the century, reaching approximately 14 000 by 1850. By 1900 the
-two parishes had nearly 30 000 inhabitants \citep{as94}. The increase
-in population was mainly the result of a high natural growth. Mortality was
-comparatively low. Fertility was high, not only by Swedish standards, but
-also in an international comparison and there are no indications of family
-planning. Total fertility fluctuated around five children per woman and, al-
-though fertility did decline during the nineteenth century, the actual fertility
-transition occurred late in the district \citep{as94}. The rate of 
-illegitimacy was low in comparison with many other parts of Northern Sweden
-where frequent pre-nuptial conceptions and illegitimate births were common.
-The illegitimacy rate fluctuated between three and six per cent during the
-nineteenth century \citep{as94}. As the population increased new land
-was cultivated and, although some villages became quite large, population
-density, on the whole, was low.
+Skellefteå was during the studied period a rural area with a mixed economy,
+based on animal husbandry, forestry and sidelines such as tar and saltpeter
+production. By the mid-19th century export of tar and lumber became an
+increasingly important part of the economy. The majority of the farmers in
+the region were smallholders and there were no large estates. Some small
+sawmills were established early in the century, but before 1900,
+industrialization had little impact on the local economy. In 1835,
+approximately 85 percent of the population made their living from
+farming. Although the distribution of economic resources was more equal
+than in several other Swedish regions, the social stratification became
+more pronounced throughout the 19th century. The increasing
+proletarianization was mainly a consequence of rapid population growth. The
+number of farming households remained fairly stable, while the number of
+landless households increased. The socio-economic development was also
+influenced by to two devastating subsistence crises in the region, in the
+1830s and in the 1860s \citep{eng05}.  
 
-During most of the nineteenth century industrialisation had little impact
-on the local economy. Some small sawmills were established early in the
-century. The majority of the population (in 1835 approximately 85 per cent)
-made their living from farming, mainly animal husbandry. The farmers were
-mainly freeholders and there were no large estates in the region. The distri-
-bution of economic resources among this group was comparatively equal.
+Mortality was comparatively low. Fertility was high, not only by Swedish
+standards, but also in an international comparison and there are no
+indications of family planning. Total fertility fluctuated around five
+children per woman and, although fertility did decline during the
+nineteenth century, the actual fertility transition occurred late in the
+district \citep{as94}. The rate of illegitimacy was low in comparison
+with many other parts of Northern Sweden, where frequent pre-nuptial
+conceptions and illegitimate births were common. The illegitimacy rate
+fluctuated between three and six per cent during the nineteenth century
+\citep{as94}. 
 
+
+
+
+%%  The area under study is the Skellefteå region on the Gulf of Bothnia. 
+%% The analyses of the Skellefteå region cover the period 1831–-1900.
+
+%% The Skellefteå region consists of the parish of Skellefteå and the parish of
+%% Byske. Byske was a part of Skellefteå parish until 1875. For the remaining
+%% part of the century it was an independent parish. Two other parishes which
+%% became independent in the early nineteenth century, Jörn and Norsjö, were
+%% incorporated into the parish of Skellefteå for a number of years at the be-
+%% ginning of the century and are included in the analyses for these years. The
+%% region is situated in the province of Västerbotten in the northern part of
+%% Sweden on the Gulf of Bothnia. The parish was one of the largest parishes in
+%% Sweden both in area and in population during the nineteenth century. The
+%% population began to increase slowly during the seventeenth and eighteenth
+%% centuries. By the turn of the nineteenth century, about 6 900 inhabitants
+%% lived in the parish. The population of the parish increased rapidly during the
+%% first half of the century, reaching approximately 14 000 by 1850. By 1900 the
+%% two parishes had nearly 30 000 inhabitants \citep{as94}. The increase
+%% in population was mainly the result of a high natural growth. Mortality was
+%% comparatively low. Fertility was high, not only by Swedish standards, but
+%% also in an international comparison and there are no indications of family
+%% planning. Total fertility fluctuated around five children per woman and, al-
+%% though fertility did decline during the nineteenth century, the actual fertility
+%% transition occurred late in the district \citep{as94}. The rate of 
+%% illegitimacy was low in comparison with many other parts of Northern Sweden
+%% where frequent pre-nuptial conceptions and illegitimate births were common.
+%% The illegitimacy rate fluctuated between three and six per cent during the
+%% nineteenth century \citep{as94}. As the population increased new land
+%% was cultivated and, although some villages became quite large, population
+%% density, on the whole, was low.
+
+%% During most of the nineteenth century industrialisation had little impact
+%% on the local economy. Some small sawmills were established early in the
+%% century. The majority of the population (in 1835 approximately 85 per cent)
+%% made their living from farming, mainly animal husbandry. The farmers were
+%% mainly freeholders and there were no large estates in the region. The distri-
+%% bution of economic resources among this group was comparatively equal.
 
 \section{Data sources}
 
@@ -315,18 +400,19 @@ barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"),
 The {\bf R} package {\tt eha} \citep{eha, ehar} is used, and the
 explanatory variables are almost the same as in the Poisson regression
 analysis. The difference is that instead of mother's birthdate, the
-infant's birthdate is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 31. Other covariates, \emph{parity}, \emph{infant's birthdate}, etc. are omitted, since they do not contribute much to the model. 
+infant's birthdate is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 32. Other covariates, \emph{parity}, \emph{infant's birthdate}, etc. are omitted, since they do not contribute much to the model. 
 
 <<surv,results='asis'>>=
 ##ef$G0InfD <- ef$G0_InfD_cat
 ##ef$G0Births.c <- ef$G0_Births -
-ef$mAge <- ef$enter - 32
-ef$mAge2 <- (ef$mAge)^2
-ef$mAge3 <- (ef$mAge)^3
+##ef$mAge <- ef$enter - 32
+##ef$mAge2 <- (ef$mAge)^2
+##ef$mAge3 <- (ef$mAge)^3
+ef$mAge <- cut(ef$enter, c(seq(16.99, 43.99, by = 3), 49.99), labels = c("17-19", "20-22", "23-25", "26-28", "29-31", "32-34", "35-37", "38-40", "41-43", "44-49"))
 ef$childBirthdate <- ef$mBirthdate + ef$enter
 fit.c <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths + #childBirthdate + 
-                    #parity + 
-                    mAge + mAge2, data = ef)
+                    ###strata(parity) + 
+                    mAge, data = ef)
 dr.c <- drop1(fit.c, test = "Chisq")
 ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.", 
        label = "tab:surv", digits = 4)
@@ -339,9 +425,10 @@ The statistical significance of involved covariates is found in Figure~\ref{fig:
 p <- numeric(3)
 p[1] <- dr.c[[4]][2]
 p[2] <- dr.c[[4]][3]
-fit.cb <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths, data = ef)
-cstat <- 2 * (fit.c$loglik[2] - fit.cb$loglik[2])
-p[3] <- pchisq(cstat, df = 2, lower.tail = FALSE)
+p[3] <- dr.c[[4]][4]
+##fit.cb <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths, data = ef)
+##cstat <- 2 * (fit.c$loglik[2] - fit.cb$loglik[2])
+##p[3] <- pchisq(cstat, df = 2, lower.tail = FALSE)
 names(p) <- c("gmDeaths", "gmBirths", "mAge")
 p <- sort(p)
 mplin <- 1 / (n:1) * 0.05
@@ -357,27 +444,33 @@ abline(h = 0)
 
 The effects are shown in Figure~\ref{fig:effstcox}
 
-<<effstcox, fig.cap = "Effects of included covariates, Cox regression.">>=
+<<effstcox, fig.cap = "Effects of included covariates, Cox regression. The leftmost value is the reference in all panels.", fig.height = 3>>=
+source("R/eff.R")
 oldpar <- par(mfrow = c(1, 3))
+sdp <- sqrt(diag(fit.c$var))
 ##gmDeaths:
-c0 <- 0
-c1 <- 100 * (exp(fit.c$coef[1]) - 1)
-c2 <- 100 * (exp(fit.c$coef[2]) - 1)
-barplot(c(c0, c1, c2), names.arg = c("0", "1", "2+"), main = "No. of GM deaths", ylab = "Rel. Risk increase (per cent)", ylim = c(0, 60))
+eff.fact(fit.c$coef[1:2], sdp[1:2], labs = fit.c$levels[[1]], xlab = "No. of GM deaths")
+##c0 <- 0
+##c1 <- 100 * (exp(fit.c$coef[1]) - 1)
+##c2 <- 100 * (exp(fit.c$coef[2]) - 1)
+##barplot(c(c0, c1, c2), names.arg = c("0", "1", "2+"), main = "No. of GM deaths", ylab = "Rel. Risk ##increase (per cent)", ylim = c(0, 60))
 ##gmBirths:
-c0 <- 0
-c1 <- 100 * (exp(fit.c$coef[3]) - 1)
-c2 <- 100 * (exp(fit.c$coef[4]) - 1)
-c3 <- 100 * (exp(fit.c$coef[5]) - 1)
-barplot(c(c0, c1, c2, c3), names.arg = c("2", "3", "4-6", "7+"), main = "No. of GM births", ylab = "Rel. Risk increase (per cent)", ylim = c(0, 60))
+eff.fact(fit.c$coef[3:5], sdp[3:5], labs = fit.c$levels[[2]], xlab = "No. of GM births")
+##c0 <- 0
+##c1 <- 100 * (exp(fit.c$coef[3]) - 1)
+##c2 <- 100 * (exp(fit.c$coef[4]) - 1)
+##c3 <- 100 * (exp(fit.c$coef[5]) - 1)
+##barplot(c(c0, c1, c2, c3), names.arg = c("2", "3", "4-6", "7+"), main = "No. of GM births", ylab = "Rel. ##Risk increase (per cent)", ylim = c(0, 60))
 ## mAge:
-x <- seq(20, 45, length = 25)
-y <- exp(fit.c$coef[6] * (x - 32) + fit.c$coef[7] * (x - 32)^2) - 1
-plot(x, 100 * y, xlab = "Age", type = "h", main = "Mother's age", ylab = "Rel. Risk increase (per cent)", axes = FALSE, ylim = c(0, 60))
-axis(1, at = c(20, 25, 32, 40, 45))
-axis(2)
-box()
-abline(h = 0)
+eff.fact(fit.c$coef[6:14], sdp[6:14], labs = fit.c$levels[[3]], xlab = "Mother's age")
+##x <- seq(20, 45, length = 25)
+##y <- exp(fit.c$coef[6] * (x - 32) + fit.c$coef[7] * (x - 32)^2) - 1
+##plot(x, 100 * y, xlab = "Age", type = "h", main = "Mother's age", ylab = "Rel. Risk increase (per cent)", ##axes = FALSE, ylim = c(0, 60))
+##axis(1, at = c(20, 25, 32, 40, 45))
+##axis(2)
+##box()
+##abline(h = 0)
+par(oldpar)
 @
 
 
@@ -386,7 +479,7 @@ abline(h = 0)
 The estimated relative risks are best shown by plotting the \emph{cumulative hazards} for the three groups (Figure~\ref{fig:relcumhaz}).
 
 <<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 5>>=
-fit.str <- coxreg(Surv(exit - enter, event) ~ strata(gmDeaths) + gmBirths + mAge + mAge2, data = ef)
+fit.str <- coxreg(Surv(exit - enter, event) ~ strata(gmDeaths) + gmBirths + mAge, data = ef)
 plot(fit.str, col = 1:3, lty = 1:3, xlab = "Age", ylab = "Cumulative hazards.")
 @
 
@@ -405,7 +498,8 @@ dr <- drop1(fit.p2, test = "Chisq")
 xtable(dr, caption = "Poisson regression, grandmother's IMR. Analysis of deviance.", digits = 5, label = 'tab:refinedpois')
 @
 
-The general conclusion is not changed: Grandmother's IMR has a strong influence on infant mortality,  and, indirectly, on her daughter's IMR.
+The general conclusion is not changed: Grandmother's IMR has a strong
+influence on her daughter's IMR. 
 
 The size of the effect is shown in Figure~\ref{fig:plotimr}.
 
@@ -417,6 +511,7 @@ abline(h = 0)
 @
 
 \subsubsection*{Survival analysis}
+
 
 The same modification as in the Poisson case is introduced here.
 
