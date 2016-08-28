@@ -31,7 +31,7 @@ historical and contemporary populations that infant deaths seem to be
 clustered into high-risk families. In a study of infant mortality in two
 regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
 found that fifty per cent of the infant deaths were found in 
-approximately 10 per cent of the families. Despite the fact that infant
+approximately ten per cent of the families\footnote{Detta säger isolerat ingenting om klustring: Måste modifieras!}. Despite the fact that infant
 mortality rates shifted over time, from about 200 per thousand in the
 beginning of the 
 nineteenth century to approximately 100 per thousand in the 1890s, most
@@ -48,7 +48,7 @@ and separate.
 
 Although the clustering of infant mortality appears to be a salient
 phenomenon throughout history, there are also major regional differences in
-the strength of the intergenerational transmission of infant
+the strength of the inter-generational transmission of infant
 mortality. While in certain regions the mortality history of infants is
 strongly correlated with the survival of infants in the previous
 generation, in other regions this effect is weak or completely absent
@@ -154,20 +154,20 @@ fluctuated between three and six per cent during the nineteenth century
 
 \section{Data sources}
 
-The analysis is based on information found in the Swedish church book
-records, that is, birth, death, migration, and catechetical registers. In the
-catechetical registers the clergy kept a continuous record of all demographic
-events for all individuals residing in a parish, making it possible to follow in-
-dividuals over time and to identify their relatives. Furthermore, information
-on literacy and occupation was recorded, including any changes in status. A
-selected number of parishes are digitalized by the [Demographic Data Base at
-Umeå University](http://www.cedar.umu.se/). The entries in the catechetical
-registers have been linked for each individual making possible longitudinal
-analyses.
+%% The analysis is based on information found in the Swedish church book
+%% records, that is, birth, death, migration, and catechetical registers. In the
+%% catechetical registers the clergy kept a continuous record of all demographic
+%% events for all individuals residing in a parish, making it possible to follow in-
+%% dividuals over time and to identify their relatives. Furthermore, information
+%% on literacy and occupation was recorded, including any changes in status. A
+%% selected number of parishes are digitalized by the [Demographic Data Base at
+%% Umeå University](http://www.cedar.umu.se/). The entries in the catechetical
+%% registers have been linked for each individual making possible longitudinal
+%% analyses.
 
 \section{Implementation of IDS}
 
-A closer look at the data created from {\tt Episodes\_file\_creator}. It contains one record per birth and is used for the suvival analysis approach, where the influence of grandmother's infant deaths on her grandchild's survival chances is studied.
+%% A closer look at the data created from {\tt Episodes\_file\_creator}. It contains one record per birth and is used for the suvival analysis approach, where the influence of grandmother's infant deaths on her grandchild's survival chances is studied.
 
 \section{Data}
 
@@ -246,7 +246,7 @@ text(1825, 700, "Births", col = "blue")
 par(oldpar)
 @
 
-The difference betwen the two data sets is of course explained by the fact that in the present data file there are restrictions on which births to include: Mother and grandmother present, grandmother must have at least two children, etc.
+The difference between the two data sets is of course explained by the fact that in the present data file there are restrictions on which births to include: Mother and grandmother present, grandmother must have at least two children, etc.
 
 <<loaddata2>>=
 ef <- ef[ef$mBirthdate + 1840 > 1826 & ef$mBirthdate + 1840 < 1851, ]
@@ -294,7 +294,7 @@ n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
 x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
 @
 
-There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so obviously there are many sister groups among mothers in the data. This fact induces dependencies in the data set, which may either be a problem (using methods assuming independence), bau it may also be possible to turn this fact into an advantage (using mixed effects models and think of intergenerational transfer as similarity between siblings). In the latter case the explanatory variable \emph{grandmother's IMR} is replaced by clustering on grandmother. This scenario is investigated in the section about \emph{Extended results}. 
+There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so obviously there are many sister groups among mothers in the data. This fact induces dependencies in the data set, which may either be a problem (using methods assuming independence), bat it may also be possible to turn this fact into an advantage (using mixed effects models and think of inter-generational transfer as similarity between siblings). In the latter case the explanatory variable \emph{grandmother's IMR} is replaced by clustering on grandmother. This scenario is investigated in the section about \emph{Extended results}. 
 
 The distribution of the sizes of sibling groups is shown in Figure~\ref{fig:sibmoth}.
 
@@ -317,7 +317,7 @@ The expected value of the number of infant deaths $D_i$ for mother No. $i, \, i 
 \begin{equation*}
 E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
 \end{equation*}
-where $R_i$ is total risktime for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risktime is equal to her number of births.)
+where $R_i$ is total risk time for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risk time is equal to her number of births.)
 Formally, $R_i$ is entered into the model as an \emph{offset} after taking logs. 
 
 The results are presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Figure~\ref{fig:poisp}.
@@ -400,8 +400,8 @@ barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"),
 
 The {\bf R} package {\tt eha} \citep{eha, ehar} is used, and the
 explanatory variables are almost the same as in the Poisson regression
-analysis. The difference is that instead of mother's birthdate, the
-infant's birthdate is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 32. Other covariates, \emph{parity}, \emph{infant's birthdate}, etc. are omitted, since they do not contribute much to the model. 
+analysis. The difference is that instead of mother's birth date, the
+infant's birth date is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 32. Other covariates, \emph{parity}, \emph{infant's birth date}, etc. are omitted, since they do not contribute much to the model. 
 
 <<surv,results='asis'>>=
 ##ef$G0InfD <- ef$G0_InfD_cat
@@ -526,7 +526,7 @@ The regression coefficient for {\tt gmIMR} is \Sexpr{round(fit.c2$coef[1], 3)}, 
 
 \paragraph{Dependency structures}
 
-There are a couple circumstances that introduce dependence structures in the data: Infants being siblings share genetic and environmental unmeasurable properties, some mothers have sisters that themselves are prresent as mothers, thus sharing grandmother. Possible ways of handling the situation are \emph{shared frailty models} \citep{aalen08} and the implementation of \emph{robust variances} \citep{extcox00}. We have tried both, but neither do change the results in any noticeable way.
+There are a couple circumstances that introduce dependence structures in the data: Infants being siblings share genetic and environmental unmeasurable properties, some mothers have sisters that themselves are present as mothers, thus sharing grandmother. Possible ways of handling the situation are \emph{shared frailty models} \citep{aalen08} and the implementation of \emph{robust variances} \citep{extcox00}. We have tried both, but neither do change the results in any noticeable way.
 
 A radical way to eliminate the sibling effect among infants is to include the firstborn for each mother. We get the results shown in Table~\ref{tab:extsurv1}.
 
@@ -560,7 +560,7 @@ abline(h = 0)
 A graphical comparison of the Weibull and nonparametric baseline cumulative hazards (Figure~\ref{fig:weibfit})
 shows an exceptionally good fit. 
 
-The advantage of the parametric (Weibull) model vs.\ the Cox regression model is that we can effortlessly estimate the baseline hazard function (no kernel estimation with ad hoc bandwidth selection). It is further possible to \emph{formally test} the hypothesis of proportional hazards for a categorical covariate through stratification and the LRT test. If proportionality is rejected it is still possible to test for nonproportional effects. (Logically, if proportionality is rejected, then there cannot be equality, but statistical hypothesis testing is not always logical in a common sense. Best to make sure.)
+The advantage of the parametric (Weibull) model vs.\ the Cox regression model is that we can effortlessly estimate the baseline hazard function (no kernel estimation with ad hoc bandwidth selection). It is further possible to \emph{formally test} the hypothesis of proportional hazards for a categorical covariate through stratification and the LRT test. If proportionality is rejected it is still possible to test for non-proportional effects. (Logically, if proportionality is rejected, then there cannot be equality, but statistical hypothesis testing is not always logical in a common sense. Best to make sure.)
 
 
 \subparagraph{Test of proportionality}
@@ -587,16 +587,81 @@ abline(v = 0)
 par(mfrow = c(1, 1))
 @
 
-A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}). For the stratified Weibull model, the shape and scale parameters both vary freely over the strata, while in the non-stratified model (but with \emph{gmDeaths} as a covariate instead of defining strata), the scape parameter is the same in all strata. So the stratified model requires six baseline parameters to estimate, while the non-stratified only requires four.
+A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}). For the stratified Weibull model, the shape and scale parameters both vary freely over the strata, while in the non-stratified model (but with \emph{gmDeaths} as a covariate instead of defining strata), the shape parameter is the same in all strata. So the stratified model requires six baseline parameters to estimate, while the non-stratified only requires four.
 
 The LR test now takes two times the difference of the two maximized log likelihoods, which under the null hypothesis (no stratification necessary) is $\chi^2$-distributed with $6 - 4 = 2$ degrees of freedom. 
-The maximized loglikelihood values are \Sexpr{round(ts, 1)} and \Sexpr{round(t1, 1)}, so the test statistic is observed to be
-\Sexpr{teststat}, which with two degrees of freedom gives a $p$-value of \Sexpr{pval}. 
+The maximized log-likelihood values are \Sexpr{round(ts, 1)} and \Sexpr{round(t1, 1)}, so the test statistic is observed to be
+\Sexpr{teststat}, which with two degrees of freedom gives a $p$-value of \Sexpr{pval}. So the null hypothesis is rejected.
+
+\subsubsection*{A 2-by-2 table}
+
+In order to make it really simple, let us just record whether a mother and a grandmother experienced an infant death or not. The result is, in tabular form,
+
+<<twotwo, results = 'asis'>>=
+gmD <- ef1$gmDeaths != 0
+mD <- ef1$mDeaths > 0 
+y <- table(mD, gmD)
+zz <- fisher.test(y)
+@
 
 
+\begin{center}
+\begin{tabular}{l|rr|r}
+     & \multicolumn{2}{l}{\bf Mother death} & \\ \hline
+\bf Grandmother death & No & Yes & \bf Sum \\ \hline
+No & \Sexpr{y[1, 1]} & \Sexpr{y[1, 2]} & \Sexpr{sum(y[1, ])} \\
+Yes & \Sexpr{y[2, 1]} & \Sexpr{y[2, 2]} & \Sexpr{sum(y[2, ])} \\ \hline
+\bf Sum & \Sexpr{sum(y[, 1])} & \Sexpr{sum(y[, 2])} & \Sexpr{sum(y)} \\ \hline
+\end{tabular}
+\end{center}
+
+The \emph{odds ratio} in this table is \Sexpr{round(zz$estimate, 2)}, and \emph{Fisher's exact test} \citep{fisher22} gives a $p$-value of \Sexpr{round(zz$p.value, 4)} and a 95\% confidence interval 
+(\Sexpr{round(zz$conf.int, 2)}). Expressed in probabilities: If no grandmother death, then the probability of a mother death is $605 / 1576 = 0.38$, while if grandmother experienced a death the corresponding probability is $298 / 671 = 0.44$, an increase by 16\%.
+
+An even simpler table is obtained if we do not allow siblings among mothers, that is, to each grandmother only one mother (her first-born daughter) is connected:
+
+<<twotwo2, results = 'asis'>>=
+gmD <- ef1$gmDeaths[!duplicated(ef1$GrandmotherID)] != 0
+mD <- ef1$mDeaths[!duplicated(ef1$GrandmotherID)] > 0 
+y <- table(mD, gmD)
+zz <- fisher.test(y)
+@
+
+
+\begin{center}
+\begin{tabular}{l|rr|r}
+     & \multicolumn{2}{l}{\bf Mother death} & \\ \hline
+\bf Grandmother death & No & Yes & \bf Sum \\ \hline
+No & \Sexpr{y[1, 1]} & \Sexpr{y[1, 2]} & \Sexpr{sum(y[1, ])} \\
+Yes & \Sexpr{y[2, 1]} & \Sexpr{y[2, 2]} & \Sexpr{sum(y[2, ])} \\ \hline
+\bf Sum & \Sexpr{sum(y[, 1])} & \Sexpr{sum(y[, 2])} & \Sexpr{sum(y)} \\ \hline
+\end{tabular}
+\end{center}
+
+Now, the \emph{odds ratio} in this table is \Sexpr{round(zz$estimate, 2)}, and \emph{Fisher's exact test} \citep{fisher22} gives a $p$-value of \Sexpr{round(zz$p.value, 4)} and a 95\% confidence interval 
+(\Sexpr{round(zz$conf.int, 2)}). Expressed in probabilities: If no grandmother death, then the probability of a mother death is \Sexpr{round(y[1, 2] / sum(y[1, ]), 2)}, while if grandmother experienced a death the corresponding probability is \Sexpr{round(y[2, 2] / sum(y[2, ]), 2)}, an increase by 16\%.
+
+An astonishing similarity!
+
+\paragraph{The 2-by-2 table with covariates}
+
+We can of course analyze these table data by \emph{binomial regression}, including the same covariates as earlier. Since the results from this exercise do not differ from earlier results, we refrain from showing them.
+
+<<getef2>>=
+ef2 <- ef1[!duplicated(ef1$GrandmotherID), ]
+ef2$gmD <- ef2$gmDeaths != "0" 
+ef2$mD <- ef2$mDeaths > 0
+fit <- glm(mD ~ gmD + G0_Births + mBirthdate, data = ef2, family = binomial)
+#summary(fit)
+@
 
 \section{Conclusion}
 
+We can conclude that it was really simple to utilize the IDS data base with the aid of Quaranta's (2016) Stata script. The only drawback was that the script required \emph{Stata 14}, which is quite expensive. Luckily, Stata provides the possibility to try the software for free during one month, and that was enough time to get the script running.
+
+Once we had the data, the analyses and report (this one) writing was performed in \emph{RStudio} \citep{rstudio} with the aid of the {\bf R} package {\tt knitr} \citep{knitr,xie15}. An environment that supports truly reproducible statistical research. 
+
+Regarding the results, the main hypothesis was confirmed: The risk of a woman to experience infant deaths is strongly increased if her mother has that experience. We applied different models, all plausible, and got almost identical results in all cases.
 
 \bibliography{cluster,surv}
 
