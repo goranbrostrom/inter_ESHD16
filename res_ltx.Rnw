@@ -566,26 +566,33 @@ The advantage of the parametric (Weibull) model vs.\ the Cox regression model is
 \subparagraph{Test of proportionality}
 
 
-We modify the model by \emph{stratifying on gmDeaths} (with the categories \emph{"0", "1", "2+"}) and plot the result, see Figure~\ref{fig:weibstrat}.
+We modify the model by \emph{stratifying on grandmother's number of infant deaths} (with the categories \emph{"0", "1", "2+"}) and plot the result, see Figure~\ref{fig:weibstrat}.
 
-<<weibstrat, fig.cap = "Weibull regression, stratified by gmDeaths.">>=
+<<weibstrat, fig.cap = "Baseline hazards from the stratified Weibull regression.">>=
 fit.ws <- phreg(Surv(exit - enter, event) ~ strata(gmDeaths) + childBirthdate + parity, data = ef)
 ##drws <- drop1(fit.ws, test = "Chisq")
-##ltx(fit.ws, dr = drws, caption = "Stratified Weibull regression.", label = "tab:weibstrat")
-plot(fit.ws, fn = "cum", col = c(1, 2, 4), lty = c(1, 2, 4), main = "", xlab = "Age")
-@
-
-A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}).
-
-
-The corresponding Weibull hazard functions are shown in Figure~\ref{fig:whaz}. Their values at zero are infinite.
-
-<<whaz, fig.cap = "The Weibull baseline hazard functions.">>=
-plot(fit.ws, fn = "haz", col = c(1, 2, 4), lty = c(1, 2, 4), main = "", xlab = "Age (years).", ylim = c(0, 0.4), 
-     printLegend = FALSE)
+##ltx(fit.ws, dr = drws, caption = "Baseline hazards from the stratified Weibull regression.", label = "tab:weibstrat")
+fit.w1 <- phreg(Surv(exit - enter, event) ~ gmDeaths + childBirthdate + parity, data = ef)
+ts <- fit.ws$loglik[2]
+t1 <- fit.w1$loglik[2]
+teststat <- round(2 * (ts - t1), 3)
+pval <- round(pchisq(teststat, df = 2, lower.tail = FALSE), 4)
+par(mfrow = c(1, 2))
+plot(fit.ws, fn = "cum", col = c(1, 2, 4), lty = c(1, 2, 4), main = "Cumulative hazards", xlab = "Age", ylab = "")
 abline(h = 0)
 abline(v = 0)
+plot(fit.ws, fn = "haz", col = c(1, 2, 4), lty = c(1, 2, 4), main = "Hazards", xlab = "Age",ylim = c(0, 0.4), printLegend = FALSE)
+abline(h = 0)
+abline(v = 0)
+par(mfrow = c(1, 1))
 @
+
+A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}). For the stratified Weibull model, the shape and scale parameters both vary freely over the strata, while in the non-stratified model (but with \emph{gmDeaths} as a covariate instead of defining strata), the scape parameter is the same in all strata. So the stratified model requires six baseline parameters to estimate, while the non-stratified only requires four.
+
+The LR test now takes two times the difference of the two maximized log likelihoods, which under the null hypothesis (no stratification necessary) is $\chi^2$-distributed with $6 - 4 = 2$ degrees of freedom. 
+The maximized loglikelihood values are \Sexpr{round(ts, 1)} and \Sexpr{round(t1, 1)}, so the test statistic is observed to be
+\Sexpr{teststat}, which with two degrees of freedom gives a $p$-value of \Sexpr{pval}. 
+
 
 
 \section{Conclusion}
