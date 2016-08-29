@@ -4,6 +4,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{natbib}
+%\usepackage{hyperref}
+\usepackage{url}
 
 \usepackage[tablesonly]{endfloat}
 \renewcommand{\efloatseparator}{\mbox{}}
@@ -18,7 +20,7 @@
 \maketitle
 
 <<setup, include=FALSE>>=
-knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 4, cache = FALSE)
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 4, cache = TRUE)
 options(show.signif.stars = FALSE)
 library(knitr)
 library(eha)
@@ -26,12 +28,14 @@ library(xtable)
 @
 
 \section{Introduction}
+
+In this article, we have a threefold aim, two of methodological character and one demographic. The first methodological one concerns the application of the IDS structure for demographic analysis. Experiences from this is useful for further development of the structure and for future uses of it. The second methodological question relate to the statistical analysis of intergenerational transfers, evaluating different methods for analysis. These methodological issues are used for the study of possible intergenerational transmission of mortality in infancy.   
+
 For more than 25 years it has been observed in numerous studies of
 historical and contemporary populations that infant deaths seem to be
 clustered into high-risk families. In a study of infant mortality in two
 regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
-found that fifty per cent of the infant deaths were found in 
-approximately ten per cent of the families\footnote{Detta säger isolerat ingenting om klustring: Måste modifieras!}. Despite the fact that infant
+found that infant deaths were unevenly distributed; more families than expected had no infant deaths or two or more infant deaths. Despite the fact that infant
 mortality rates shifted over time, from about 200 per thousand in the
 beginning of the 
 nineteenth century to approximately 100 per thousand in the 1890s, most
@@ -44,7 +48,7 @@ inter-generational transmissions: genetic, cultural, socio-economic and
 environmental factors or a combination of these. Today there seems to be
 consensus that the unequal distribution of infant death among families is a
 complex interplay of different factors, which can be difficult to identify
-and separate.  
+and separate.  The observed family dependency has led to an increased attention to a possible intergenerational transmission of demographic patterns \citep{edja12}, sometimes even considering epigenetic effects \citep{pem14}.
 
 Although the clustering of infant mortality appears to be a salient
 phenomenon throughout history, there are also major regional differences in
@@ -154,6 +158,31 @@ fluctuated between three and six per cent during the nineteenth century
 
 \section{Data sources}
 
+The analysis is based on information found in the Swedish church book
+records, that is, birth, death, migration, and catechetical registers
+\citep{ndj93}. In the catechetical registers the clergy kept a
+continuous record of all demographic events for all individuals residing in
+a parish, making it possible to follow individuals over time and to
+identify their relatives. Furthermore, a rich variety of additional
+information, for example on occupation, was recorded. A selected number of
+parishes are digitalized by the Demographic Data Base at Umeå University
+(\url{http://www.cedar.umu.se/}). The entries in the catechetical registers and
+the birth, death, marriage and migration registers have been linked, making
+it possible to analyse life courses of individuals while present in the
+digitalized regions. During recent years, the database has been prolonged
+with parish registers until the 1950s for the Skellefteå and Umeå
+regions. This is available in the anonymized database POPLINK with a
+generational depth of up to 15 generations \citep{wee16}.  
+
+The registration in POPLINK of the Skellefteå region starts for the year
+1699 with birth registers and from 1720 with catechetical registers. Since
+the 18th century catechetical registers underreport children that died
+young and the death registers are missing before 1815, we restrict our
+analysis to the 19th century. We include the reproductive history of women
+born 1826--50. 
+
+The public IDS database is extracted from the POPLINK database, but only until 1900 due to requirements of personal integrity.
+
 %% The analysis is based on information found in the Swedish church book
 %% records, that is, birth, death, migration, and catechetical registers. In the
 %% catechetical registers the clergy kept a continuous record of all demographic
@@ -168,6 +197,20 @@ fluctuated between three and six per cent during the nineteenth century
 \section{Implementation of IDS}
 
 %% A closer look at the data created from {\tt Episodes\_file\_creator}. It contains one record per birth and is used for the suvival analysis approach, where the influence of grandmother's infant deaths on her grandchild's survival chances is studied.
+
+
+It was easy to utilize the IDS data base with the aid of Quaranta's (2016)
+Stata script. The only drawback was that the script required \emph{Stata
+  14}, which is a quite expensive piece of software. Luckily, Stata
+provides the possibility to 
+try the software for free during one month, and that was more than enough time to get
+the script running. However, this is of course not a sustainable state of
+the matter: Efforts should be made to utilize less costly approaches. 
+
+Once we had the data, the analyses and report (this one) writing was
+performed in \emph{RStudio} \citep{rstudio} with the aid of the {\bf R}
+package {\tt knitr} \citep{knitr,xie15}. An environment that supports truly
+reproducible statistical research and is free in all aspects of the word.
 
 \section{Data}
 
@@ -398,7 +441,7 @@ barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"),
 
 \subsubsection*{Survival analysis}
 
-The {\bf R} package {\tt eha} \citep{eha, ehar} is used, and the
+The {\bf R} package {\tt eha} \citep{eha, ehar12} is used, and the
 explanatory variables are almost the same as in the Poisson regression
 analysis. The difference is that instead of mother's birth date, the
 infant's birth date is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 32. Other covariates, \emph{parity}, \emph{infant's birth date}, etc. are omitted, since they do not contribute much to the model. 
@@ -657,11 +700,95 @@ fit <- glm(mD ~ gmD + G0_Births + mBirthdate, data = ef2, family = binomial)
 
 \section{Conclusion}
 
-We can conclude that it was really simple to utilize the IDS data base with the aid of Quaranta's (2016) Stata script. The only drawback was that the script required \emph{Stata 14}, which is quite expensive. Luckily, Stata provides the possibility to try the software for free during one month, and that was enough time to get the script running.
+We set out three main aims for this article. The first was about
+assessing the power of the IDS data format for demographic analysis, in
+this case in relation to transnational comparative research.
+We can confirm that applying the IDS format, and the general script made by
+Quaranta has fulfilled its services well. The use of the script has
+facilitated comparisons between countries. 
 
-Once we had the data, the analyses and report (this one) writing was performed in \emph{RStudio} \citep{rstudio} with the aid of the {\bf R} package {\tt knitr} \citep{knitr,xie15}. An environment that supports truly reproducible statistical research. 
+What is important to remember is that the IDS format do not relieve the
+researcher from carefully evaluating the sources and their usefulness for
+the research questions raised. In the database for the Skellefteå region,
+we had to restrict our studied period substantially. Due to deficient data
+for the 18th century, infant deaths were severely underestimated. There are
+ways taking care of this problem, but hat require clear definitions of rules 
+on how to identify infant deaths, something that must be performed in 
+a preparatory state.  
 
-Regarding the results, the main hypothesis was confirmed: The risk of a woman to experience infant deaths is strongly increased if her mother has that experience. We applied different models, all plausible, and got almost identical results in all cases.
+Second, we have tried different analytical models, ranging from complicated
+(proportional hazards models for survival times of infants)
+to simple (had a woman and/or her oldest daughter an infant death or not: A
+contingency table analysis). ``Complicated'' refers to ``strong
+assunptions and strict model checking'': The hard part is dealing with the
+complicated dependency structures arising from sisters having the same
+mother and the dependency between life lengths of sibling infants. On the
+other hand, ``simple'' means almost no restrictive assumptions, no
+complicated dependency structures, and results
+that are directly interpretable in terms of simpe-to-understand probabilities.
+
+As is often the case, simple is at least as good as complicated: The
+different methods give similar results, and it is easy to feel confident in
+the ones emerging from models with the weakest assumptions. On the other
+hand, it is generally good (statistical) practise to try different approaches to the
+analysis of the
+same problem. You may call it \emph{sensitivity analysis} \citep[chapter
+6]{co84} if you wish.  
+
+Third, when it comes to the results, we find a clear association between infant
+mortality among the mothers and the grandmothers. (An increase of doubling
+the risk, but also of 16 per cent increase if the grandmother had
+experienced an infant death among her children\footnote{Förstår inte detta.}). Another question is if
+this is of practical significance. (What can we say about that?\footnote{Tja, om sannolikheten att erfara ett spädbarnsdödsfall ökar från 38 till 45 procent, är det av nåt intresse?}) 
+
+\section{Discussion}
+
+Our study confirms the existence of family dependency in infant mortality
+risks. How can the association be explained? This relates to the old debate
+of whether humans are primarily formed by nature or nurture that is
+important, a division that now is becoming muddled and partly obsolete due
+to recent scientific development \citep{mel14}. In the
+analytical approach taken here, we cannot really distinguish between purely
+biological versus social and cultural factors, but we briefly discuss
+possible pathways. 
+
+One obvious possible factors refer to genetic factors and the inheritance
+of genes between generations. People are differently frail and it is
+reasonable that this is genetically transferred, both making children less
+capable of surviving and for conditions related to the mother when it comes
+to the delivery or the ability to take care of the newborn. There are also
+other possible biological reasons. The Rh negative blood group is common in
+our region, thus increasing the risk for Rh disease. It has been shown that
+this had some impact on perinatal health in the region, although on a
+fairly restricted level, but it can still be a component in the observed
+association \citep{hle12}. Furthermore, a
+mother and her sibling group can have experienced problematic conditions in
+early childhood that may have scarred her for life, making her biologically
+less fit for child birth and thereby increasing the mortality risks for her
+children \citep{lq12}.   
+
+Can the survival of children have to do with transferred behaviours between
+generations? We know that the ways children are taken care of is crucial
+for their health and survival, particularly in a high mortality
+régime. This can relate to local patterns of child care, for example on the
+practice of breast-feeding, but it can also be practices that are
+transferred within families. Our closest family is the closest social
+organization for learning. In the 19th century Sundsvall region, mothers
+moving to the district kept their child care practices in the new
+environment, leading to higher infant mortality of when the mother came
+from a high mortality region vice versa \citep{lgt04}. 
+
+Another explanation for the association between generations is that they
+only reflect similar living conditions, for example the physical
+environment they lived in or the belonging to the same social class. This
+could be more thoroughly analyzed in models where residence and/or social
+position are considered. 
+
+
+Regarding the results, the main hypothesis was confirmed: The risk of a
+woman to experience infant deaths is strongly increased if her mother has
+that experience. We applied different models, all plausible, and got almost
+identical results in all cases. 
 
 \bibliography{cluster,surv}
 
