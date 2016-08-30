@@ -225,7 +225,8 @@ reproducible statistical research and is free in all aspects of the word.
 \section{Data}
 
 We use the data set that is created from the IDS data base with a standard extraction script \citep{lq16}.
-In the analyses presented here we are using {\bf R}, a free software environment for statistical computing and graphics \citep{R}.
+In the analyses presented here we are using {\bf R}, a free software environment for statistical computing and graphics \citep{R}. The study is limited to
+mothers born between Sunday, January 1, 1826 and Tuesday, December 31,  1850.
 
 <<loaddata>>=
 if (!file.exists("ef.rda")){
@@ -242,7 +243,30 @@ ef$mBirthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
 ef$sex <- ef$Child_sex
 @
 
-Some variables need to be redefined, centered and categorized, and the data set needs to be restricted in calendar time. The study is limited to mothers born between  Sunday,  January 1, 1826 and Tuesday, December 31, 1850. \emph{Grandmother's number of births} is categorized into \emph{"2", "3", "4-6", "7+"} (named \emph{gmBirths}), and \emph{Mother's age at child birth} is centered around 30 (named \emph{mAge}), close to the mean age at delivery. \emph{Birth\_order} is categorized into \emph{"1", "2", "3", "4-6", "7+"} (named \emph{parity}) and \emph{Mother's birthdate} is centered around Wednesday, January 1, 1840 (named(\emph{mBirthdate}). The new variable \emph{gmIMR} is defined as the ratio between grandmother's number of infant deaths and her number of births, or $\text{G0\_InfD} / \text{G0\_Births}$.
+\subsection{Variables}
+Some variables need to be redefined, centered and categorized. Here is a description.
+
+\begin{description}
+
+\item[mDeaths] The number of infant deaths a mother experiences. This is the basic \emph{response} variable in all models. In some cases it is categorized.
+
+\item[gmDeaths] The number of infant deaths a grandmother (mother's mother) experiences. It is the primary \emph{explanatory variable}. It is categorized in the categories "0", "1", and "2+".
+
+\item[gmBirths] The number of grandmother's births. Is always (by design) two or larger. In the analyses it is categorized: "2", "3", "4-6", "7+".
+
+\item[mBirthdate] Mother's birthdate expressed as years between 1 January 1 and her day of birth, minus one, \emph{minus 1840}(!). An example: A woman born 3 April 1842 gets the value 1862.253 to begin with. Then subtract 1840, and the value is 2.253. The reason for this \emph{centering} around 1840 is \emph{good statistical practice}: The reference point (zero) of a covariate should lie within the range of the variable in regression analyses.
+
+\item[mAge] Mother's age at the birth of a child. Categorized into the intervals "17-19", "20-22", \ldots, "41-43", "44-49".
+
+\item[parity] The birth order of a mother's child.
+
+\item[childBirthdate] The birthdate of a mother's child, centered in the same way as {\tt mBirthdate}.
+
+\item[gmIMR] Grandmother's infamt mortality rate, that is, the number of deaths divided by the number of births. Used as an alternative to {\tt gmDeaths} in some analyses.
+
+\item[sex] The sex of a mother's child.
+\end{description}
+
 
 <<redefine>>=
 ef$gmBirths <- cut(ef$G0_Births, c(1, 2.5, 3.5, 6.5, 25), labels = c("2", "3", "4-6", "7+"))
@@ -338,7 +362,7 @@ ef1 <- ef[!duplicated(ef$MotherID), ]
 
 \subsubsection*{The covered time period}
 
-Our study sample consists of all mothers born 1826--1950. The distribution of their birth years and their infant mortality (by year of child death) are shown in  Figure~\ref{fig:sample}.
+Our study sample consists of all mothers born 1826--1950. The distribution of their birth years and their infant mortality (by year of child death) are shown in  Figure~\ref{fig:sample}. The distribution of the grandmothers' birthdates is unknown, not part of the IDS retrieval.  
 
 
 
@@ -370,7 +394,7 @@ induces dependencies in the data set, which may either be a problem (using
 methods assuming independence), but it may also be possible to turn this
 fact into an advantage (using mixed effects models and think of
 inter-generational transfer as similarity between siblings). In the latter
-case the explanatory variable \emph{grandmother's IMR} is replaced by
+case the explanatory variable {\tt gmIMR} is replaced by
 clustering on grandmother.
 
 The distribution of the sizes of sibling groups is shown in Figure~\ref{fig:sibmoth}.
@@ -399,7 +423,7 @@ where $R_i$ is total risk time for mother No. $i$, $\mathbf{x}_i$ a vector of he
 Formally, $R_i$ is entered into the model as an \emph{offset} after taking logs. 
 
 The results are presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Figure~\ref{fig:poisp}.
-The solid horizontal red line at 5\% is our (conventionally) chosen nominal limit for statistical significance. The dashed line is the limit that should be respected in honor of the \emph{multiple comparisons} situation \citep{holm79}. The first (leftmost) covariate, \emph{G0InfD\_ cat}, is  clearly statistically significant, while \emph{G0\_Births} is just barely significant. \emph{M\_birthdate} is clearly out. 
+The solid horizontal red line at 5\% is our (conventionally) chosen nominal limit for statistical significance. The dashed line is the limit that should be respected in honor of the \emph{multiple comparisons} situation \citep{holm79}. The first (leftmost) covariate, {\tt gmDeaths}, is  clearly statistically significant, while {\tt gmBirths} is just barely significant. {\tt mBirthdate} is clearly out. 
 %Table~\ref{tab:poisson}, 
 Second, the \emph{effect sizes} are graphically evaluated in Figure~\ref{fig:poiseff}. 
 
@@ -446,9 +470,9 @@ x <- summary(fit.p)$coefficients
 ##summary(fit)
 @
 
-So, the likelihood ratio test (LRT) shows that {\tt gmDeaths} and \emph{gmBirths} are highly \emph{statistically} significant in the model. 
+So, the likelihood ratio test (LRT) shows that {\tt gmDeaths} and {\tt gmBirths} are highly \emph{statistically} significant in the model. 
 
-Are they also \emph{practically} significant? Figure~\ref{fig:poiseff} shows the \emph{expected risks} of infant death by the number of grandmother's deaths and the number of her births. 
+So, the important result is the \emph{practical} significance, the effect sizes. Figure~\ref{fig:poiseff} shows the \emph{expected risks} of infant death by the number of grandmother's deaths and the number of her births. 
 
 <<poiseff, fig.cap = "Infant mortality by grandmother's number of infant deaths (left) and grandmother's number of births(right). Comparisons made at reference value of other covariates.">>=
 cat0 <- exp(fit.p$coef[1])
@@ -459,7 +483,7 @@ oldpar <- par(mfrow = c(1, 2))
   ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
 
 barplot(100 * c(cat0, cat1, cat2), names.arg = c("0", "1", "2+"), 
-        ylim = c(0, 9), ylab = "IMR (per cent)", main = "No. of grandmother's deaths")
+        ylim = c(0, 9), ylab = "IMR (per cent)", xlab = "gmDeaths")
 cat0 <- exp(fit.p$coef[1])
 cat1 <- exp(sum(fit.p$coef[c(1, 4)]))
 cat2 <- exp(sum(fit.p$coef[c(1, 5)]))
@@ -469,7 +493,7 @@ cat3 <- exp(sum(fit.p$coef[c(1, 6)]))
   ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
 
 barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"), 
-    ylab = "IMR (per cent)", main = "No. of grandmother's births")
+    ylab = "IMR (per cent)", xlab = "gmBirths")
 
 @
 
@@ -478,8 +502,8 @@ barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"),
 
 The {\bf R} package {\tt eha} \citep{eha, ehar12} is used, and the
 explanatory variables are almost the same as in the Poisson regression
-analysis. The difference is that instead of mother's birth date, the
-infant's birth date is used (no big difference), and a new variable, \emph{mother's age at child birth}, is introduced. It is centered around age 32. Other covariates, \emph{parity}, \emph{infant's birth date}, etc. are omitted, since they do not contribute much to the model. 
+analysis. The difference is that instead of {\tt mBirthdate}, the
+{\tt childBirthdate} is used (no big difference), and a new variable, {\tt mAge}, is introduced. It is categorized into three-year intervals. Other covariates, {\tt parity},  etc. are omitted, since they do not contribute much to the model. 
 
 <<surv,results='asis'>>=
 ##ef$G0InfD <- ef$G0_InfD_cat
@@ -529,10 +553,10 @@ abline(h = 0)
 @
 
 Second, the effects are shown in Figure~\ref{fig:effstcox}. For the
-covariate \emph{grandmother's No.\ of infant deaths}, the real effect on
+covariate {\tt gmDeaths}, the real effect on
 her daughter's risk of experiencing infant deaths appears when the number
-of deaths are two or larger. \emph{Grandmother's No.\ of births} is also
-influential, as is \emph{mother's age} with its characteristic $U$-shaped
+of deaths are two or larger. {\tt gmBirths} is also
+influential, as is {\tt mAge} with its characteristic $U$-shaped
 effect on infant mortality. 
 
 <<effstcox, fig.cap = "Effects of included covariates, Cox regression. The leftmost value is the reference in all panels.", fig.height = 2.3>>=
@@ -564,14 +588,8 @@ eff.fact(fit.c$coef[6:14], sdp[6:14], labs = fit.c$levels[[3]], xlab = "Mother's
 par(oldpar)
 @
 
-
-
-
-The estimated cumulative hazards functions of the three groups of
-grandmother's No. of infant deaths are shown by plotting the
-\emph{cumulative hazards} for the three groups
-(Figure~\ref{fig:relcumhaz}). This figure is based on stratification on the
-levels ``no deaths'', ``exactly one death'', and ``two ore more deaths''.
+The estimated cumulative hazards functions for the strata of
+{\tt gmDeaths} are shown in Figure~\ref{fig:relcumhaz}.
 
 <<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 3.2>>=
 fit.str <- coxreg(Surv(exit - enter, event) ~ strata(gmDeaths) + gmBirths + mAge, data = ef)
@@ -588,7 +606,7 @@ the Poisson regression.
 
 \subsubsection*{The Poisson model}
 
-It turns out that the model fit to data is somewhat better with \emph{number of births} as the offset (log scale). Also showing a slight improvement is to use \emph{grandmother's IMR} as explanatory variable rather than her \emph{absolute number of deaths}. The IMR is defined as the number of infant deaths divided by the number of births. These changes also implies that the comparison \emph{mother vs. grandmother} happens on a probability scale rather than on the intensity one.
+It turns out that the model fit to data is somewhat better with \emph{number of births} as the offset (log scale). Also showing a slight improvement is to use {\tt gmIMR} as explanatory variable rather than her \emph{absolute number of deaths}. The IMR is defined as the number of infant deaths divided by the number of births. These changes also implies that the comparison \emph{mother vs. grandmother} happens on a probability scale rather than on the intensity one.
 
 <<refinedpois, results = "asis">>=
 
@@ -635,7 +653,7 @@ dr.c3 <- drop1(fit.c3, test = "Chisq")
 ltx(fit.c3, dr = dr.c3, caption = "Cox regression, extended model with only one birth per mother.", digits = 4, label = "tab:extsurv1")
 @
 
-The effect of \emph{grandmother's IMR} is even stronger for firstborn than generally (estimated to \Sexpr{round(fit.c3$coef[1], 3)}), however, the statistical significance is weak, a logical consequence of the much lower number of infant deaths (compare Tables~\ref{tab:extsurv}~and~\ref{tab:extsurv1}).
+The effect of {\tt gmIMR} is even stronger for firstborn than generally (estimated to \Sexpr{round(fit.c3$coef[1], 3)}), however, the statistical significance is weak, a logical consequence of the much lower number of infant deaths (compare Tables~\ref{tab:extsurv}~and~\ref{tab:extsurv1}).
 
 \paragraph{Parametric proportional hazards}
 
@@ -663,7 +681,7 @@ The advantage of the parametric (Weibull) model vs.\ the Cox regression model is
 \subparagraph{Test of proportionality}
 
 
-We modify the model by \emph{stratifying on grandmother's number of infant deaths} (with the categories \emph{"0", "1", "2+"}) and plot the result, see Figure~\ref{fig:weibstrat}.
+We modify the model by \emph{stratifying} on {\tt gmDeaths} (with the categories "0", "1", "2+") and plot the result, see Figure~\ref{fig:weibstrat}.
 
 <<weibstrat, fig.cap = "Baseline hazards from the stratified Weibull regression.", fig.height = 4.1>>=
 fit.ws <- phreg(Surv(exit - enter, event) ~ strata(gmDeaths) + childBirthdate + parity, data = ef)
@@ -684,7 +702,7 @@ abline(v = 0)
 par(mfrow = c(1, 1))
 @
 
-A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}). For the stratified Weibull model, the shape and scale parameters both vary freely over the strata, while in the non-stratified model (but with \emph{gmDeaths} as a covariate instead of defining strata), the shape parameter is the same in all strata. So the stratified model requires six baseline parameters to estimate, while the non-stratified only requires four.
+A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}). For the stratified Weibull model, the shape and scale parameters both vary freely over the strata, while in the non-stratified model (but with {\tt gmDeaths} as a covariate instead of defining strata), the shape parameter is the same in all strata. So the stratified model requires six baseline parameters to estimate, while the non-stratified only requires four.
 
 The LR test now takes two times the difference of the two maximized log likelihoods, which under the null hypothesis (no stratification necessary) is $\chi^2$-distributed with $6 - 4 = 2$ degrees of freedom. 
 The maximized log-likelihood values are \Sexpr{round(ts, 1)} and \Sexpr{round(t1, 1)}, so the test statistic is observed to be
@@ -819,7 +837,7 @@ association \citep{hle12}. Furthermore, a
 mother and her sibling group can have experienced problematic conditions in
 early childhood that may have scarred her for life, making her biologically
 less fit for child birth and thereby increasing the mortality risks for her
-children \citep{lq12}.   
+children \citep{lq13}.   
 
 Can the survival of children have to do with transferred behaviours between
 generations? We know that the ways children are taken care of is crucial
