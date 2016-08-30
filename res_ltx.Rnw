@@ -42,7 +42,7 @@ nineteenth century to approximately 100 per thousand in the 1890s, most
 families never 
 experienced an infant death. About 67 per cent of all women that gave birth
 would see their offspring survive their first year of life regardless of
-how many children they conceived. Various explanations have been proposed
+how many children they conceived, compared to 64 per cent, which is the expected value without any clustering. Various explanations have been proposed
 to this apparently complex phenomenon, including different aspects of
 inter-generational transmissions: genetic, cultural, socio-economic and
 environmental factors or a combination of these. Today there seems to be
@@ -245,15 +245,18 @@ ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 3.5, 6.5, 25), labels = c("1",
 
 \section{Results}
 
+
 \subsection{Descriptive statistics of the IDS extraction}
 
 The yearly numbers of births and deaths for the \emph{mothers in the data set} and, as a comparison, for the data in {\sc Poplink},  are shown in Figure~\ref{fig:numbirth}.
 
-<<numbirth, fig.cap="Number of births and infant deaths by year.">>=
-oldpar = par(mfrow = c(1, 2))
+<<numbirth, fig.cap="Number of births and infant deaths and infant mortality by year.", fig.height = 6>>=
+oldpar = par(mfrow = c(2, 2))
 byear <- floor(ef$mBirthdate + ef$enter) + 1840
 x <- table(byear)
 years <- names(x)
+x <- x[-length(x)]
+years <- years[-length(years)]
 plot(years, as.numeric(x), type = "l", xlab = "Birth/Death year", ylab = "Frequency", col = "blue", ylim = c(0, 1500), main = "Present data")
 dyear <- with(ef[ef$event, ], floor(mBirthdate + exit)) + 1840
 y <- table(dyear)
@@ -262,7 +265,13 @@ lines(years, as.numeric(y), type = "l", col = "red")
 abline(h = 0)
 text(1850, 130, "Deaths", col = "red")
 text(1825, 450, "Births", col = "blue")
-
+ss <- with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter))
+x <- perstat(ss, seq(1801,1901, by = 1), age = c(0, 1))
+plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l", 
+     ylim = c(0, 0.4), col = "blue")
+abline(h = 0)
+aver <- perstat(ss, seq(1801, 1901, by = 100), age = c(0, 1))$intensity
+abline(h = aver, col = "blue", lty = 2)
 ## POPLINK:
 library(skum)
 per1 <- persons[persons$frsbobtyp == 2 & persons$region == "ske", c("foddat", "doddat")]
@@ -286,6 +295,14 @@ lines(years, as.numeric(y), type = "l", col = "red")
 abline(h = 0)
 text(1850, 200, "Deaths", col = "red")
 text(1825, 700, "Births", col = "blue")
+ss <- with(obs, cbind(enter, exit, sluttyp == 2, birthdate))
+x <- perstat(ss, seq(1801, 1901, by = 1), age = c(0, 1))
+aver <- perstat(ss, seq(1801, 1901, by = 100), age = c(0, 1))$intensity
+plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "POPLINK", type = "l", 
+     ylim = c(0, 0.4), col = "blue")
+abline(h = 0)
+abline(h = aver, lty = 2, col = "blue")
+##plot(years, as.numeric(x) / as.numeric(y), xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l")
 par(oldpar)
 @
 
