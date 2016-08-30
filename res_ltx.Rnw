@@ -11,7 +11,7 @@
 \renewcommand{\efloatseparator}{\mbox{}}
 \bibliographystyle{apalike}
 
-\title{Intergenerational transfers of infant mortality in 19th century
+\title{Clustering and intergenerational transfers of infant mortality in 19th century
   northern Sweden}
 \author{Elisabeth Engberg, Sören Edvinsson, and Göran Broström}
 
@@ -20,7 +20,7 @@
 \maketitle
 
 <<setup, include=FALSE>>=
-knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 4, cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 2.8, cache = TRUE)
 options(show.signif.stars = FALSE)
 library(knitr)
 library(eha)
@@ -29,13 +29,20 @@ library(xtable)
 
 \section{Introduction}
 
-In this article, we have a threefold aim, two of methodological character and one demographic. The first methodological one concerns the application of the IDS structure for demographic analysis. Experiences from this is useful for further development of the structure and for future uses of it. The second methodological question relate to the statistical analysis of intergenerational transfers, evaluating different methods for analysis. These methodological issues are used for the study of possible intergenerational transmission of mortality in infancy.   
+In this article, we have a threefold aim, two of methodological character
+and one demographic. The first methodological one concerns the application
+of the IDS structure for demographic analysis. Experiences from this is
+useful for further development of the structure and for future uses of
+it. The second methodological question relates to the statistical analysis
+of intergenerational transfers, evaluating different models.
+These methodological issues are used for the study of possible
+intergenerational transmission of mortality in infancy.    
 
 For more than 25 years it has been observed in numerous studies of
 historical and contemporary populations that infant deaths seem to be
 clustered into high-risk families. In a study of infant mortality in two
 regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
-found that infant deaths were unevenly distributed; more families than expected had no infant deaths or two or more infant deaths. Despite the fact that infant
+found that infant deaths were not uniformly distributed; more families than expected had no infant death or two or more infant deaths. Despite the fact that infant
 mortality rates shifted over time, from about 200 per thousand in the
 beginning of the 
 nineteenth century to approximately 100 per thousand in the 1890s, most
@@ -46,8 +53,8 @@ how many children they conceived, compared to 64 per cent, which is the expected
 to this apparently complex phenomenon, including different aspects of
 inter-generational transmissions: genetic, cultural, socio-economic and
 environmental factors or a combination of these. Today there seems to be
-consensus that the unequal distribution of infant death among families is a
-complex interplay of different factors, which can be difficult to identify
+consensus that the non-uniform distribution of infant deaths among families is a
+complex interplay of different factors, difficult to identify
 and separate.  The observed family dependency has led to an increased attention to a possible intergenerational transmission of demographic patterns \citep{edja12}, sometimes even considering epigenetic effects \citep{pem14}.
 
 Although the clustering of infant mortality appears to be a salient
@@ -65,11 +72,14 @@ rather small regions, and that different studies thus are hard to compare
 due to differences in methodology, both in terms of database management and
 in terms of statistical analysis. 
 
+Finally, one should also be aware of the fact that clustering emerges
+naturally from pure randomness, often very counterintuitive. This is
+discussed by \citet{hb12}.
 \section{Area}
 
-The area under study is the Skellefteå region in the province of
-Västerbotten in the northern part of Sweden, and analyses cover the period
-1831--1900. The region was vast, and consisted at the outset of the study of
+The area under study is the 19th century Skellefteå region in the province of
+Västerbotten in the northern part of Sweden. The region was vast, and
+consisted at the outset of the study of 
 one large rural parish, Skellefteå parish. In 1875, the northern part,
 Byske was detached into a separate administrative unit, but the population
 is nevertheless included in the study until 1900. Before 1834 the analyses
@@ -96,7 +106,7 @@ the region were smallholders and there were no large estates. Some small
 sawmills were established early in the century, but before 1900,
 industrialization had little impact on the local economy. In 1835,
 approximately 85 percent of the population made their living from
-farming. Although the distribution of economic resources was more equal
+farming. Although the distribution of economic resources was more uniform
 than in several other Swedish regions, the social stratification became
 more pronounced throughout the 19th century. The increasing
 proletarianization was mainly a consequence of rapid population growth. The
@@ -105,12 +115,12 @@ landless households increased. The socio-economic development was also
 influenced by to two devastating subsistence crises in the region, in the
 1830s and in the 1860s \citep{eng05}.  
 
-Mortality was comparatively low. Fertility was high, not only by Swedish
+Infant mortality was comparatively low. Fertility was high, not only by Swedish
 standards, but also in an international comparison and there are no
 indications of family planning. Total fertility fluctuated around five
 children per woman and, although fertility did decline during the
 nineteenth century, the actual fertility transition occurred late in the
-district \citep{as94}. The rate of illegitimacy was low in comparison
+district \citep{as94,coa86}. The rate of illegitimacy was low in comparison
 with many other parts of Northern Sweden, where frequent pre-nuptial
 conceptions and illegitimate births were common. The illegitimacy rate
 fluctuated between three and six per cent during the nineteenth century
@@ -354,7 +364,14 @@ n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
 x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
 @
 
-There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so obviously there are many sister groups among mothers in the data. This fact induces dependencies in the data set, which may either be a problem (using methods assuming independence), bat it may also be possible to turn this fact into an advantage (using mixed effects models and think of inter-generational transfer as similarity between siblings). In the latter case the explanatory variable \emph{grandmother's IMR} is replaced by clustering on grandmother. This scenario is investigated in the section about \emph{Extended results}. 
+There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so
+obviously there are many sister groups among mothers in the data. This fact
+induces dependencies in the data set, which may either be a problem (using
+methods assuming independence), but it may also be possible to turn this
+fact into an advantage (using mixed effects models and think of
+inter-generational transfer as similarity between siblings). In the latter
+case the explanatory variable \emph{grandmother's IMR} is replaced by
+clustering on grandmother.
 
 The distribution of the sizes of sibling groups is shown in Figure~\ref{fig:sibmoth}.
 
@@ -367,7 +384,8 @@ m.gm <- with(ef1, sum(unique(GrandmotherID) %in% MotherID))
 @
 
 How many grandmothers are also mothers (and vice versa)? The answer is \Sexpr{m.gm}, or 
-\Sexpr{round(m.gm / n.gm * 100, 2)} per cent of the grandmothers.
+\Sexpr{round(m.gm / n.gm * 100, 2)} per cent of the grandmothers. This
+small amount is of no practical importance for the results.
 
 \subsection{Standard results}
 
@@ -392,7 +410,7 @@ fit.p <- glm(mDeaths ~ offset(log(Mexpon)) + gmDeaths + gmBirths + mBirthdate, d
 dr <- drop1(fit.p, test = "Chisq")
 @
 
-<<poisp, fig.cap = 'LRT p-values for the covariates, Poisson regression. Dashed line is significance limit with  "multiple comparisons" correction.'>>=
+<<poisp, fig.cap = 'LRT p-values for the covariates, Poisson regression. The dashed line is the significance limit with  "multiple comparisons" correction.'>>=
 pv <- dr[[5]][-1]
 names(pv) <- c("gmDeaths", "gmBirths", "mBirthdate")
 xp <- sort(pv)
@@ -479,8 +497,15 @@ ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.",
        label = "tab:surv", digits = 4)
 @
 
-The standard form of results is shown in Table~\ref{tab:surv}. 
-The statistical significance of involved covariates is found in Figure~\ref{fig:siginv}.
+The standard tabular form of results is shown in Table~\ref{tab:surv}, and
+the main features of the fit are shown graphically.
+First, the statistical significance of involved covariates is found in
+Figure~\ref{fig:siginv}. The $p$-values are marked as small filled (green)
+circles for $p$values falling below the dashed line showing significance
+at the 5\% level even in the presence of a multiple comparisons correction. 
+The $p$-values are ordered increasingly from left to right in the
+figure. All included covariates have a significant influence on the model fit.
+
 
 <<siginv, fig.cap = 'LRT p-values for the covariates, Cox regression. Dashed line is significance limit with "multiple comparisons" correction.'>>=
 p <- numeric(3)
@@ -503,9 +528,14 @@ box()
 abline(h = 0)     
 @
 
-The effects are shown in Figure~\ref{fig:effstcox}
+Second, the effects are shown in Figure~\ref{fig:effstcox}. For the
+covariate \emph{grandmother's No.\ of infant deaths}, the real effect on
+her daughter's risk of experiencing infant deaths appears when the number
+of deaths are two or larger. \emph{Grandmother's No.\ of births} is also
+influential, as is \emph{mother's age} with its characteristic $U$-shaped
+effect on infant mortality. 
 
-<<effstcox, fig.cap = "Effects of included covariates, Cox regression. The leftmost value is the reference in all panels.", fig.height = 3>>=
+<<effstcox, fig.cap = "Effects of included covariates, Cox regression. The leftmost value is the reference in all panels.", fig.height = 2.3>>=
 source("R/eff.R")
 oldpar <- par(mfrow = c(1, 3))
 sdp <- sqrt(diag(fit.c$var))
@@ -537,14 +567,22 @@ par(oldpar)
 
 
 
-The estimated relative risks are best shown by plotting the \emph{cumulative hazards} for the three groups (Figure~\ref{fig:relcumhaz}).
+The estimated cumulative hazards functions of the three groups of
+grandmother's No. of infant deaths are shown by plotting the
+\emph{cumulative hazards} for the three groups
+(Figure~\ref{fig:relcumhaz}). This figure is based on stratification on the
+levels ``no deaths'', ``exactly one death'', and ``two ore more deaths''.
 
-<<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 4>>=
+<<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 3.2>>=
 fit.str <- coxreg(Surv(exit - enter, event) ~ strata(gmDeaths) + gmBirths + mAge, data = ef)
 plot(fit.str, col = 1:3, xlab = "Age", ylab = "Cumulative hazards")
 @
 
-There is an evident deviation from the assumption of \emph{proportional hazards}: It is cases with exactly one grandmother infant death that deviates. However, this does not disturb the main conclusion: Two or more grandmother infant deaths is harmful, quite in line with the results from the Poisson regression. 
+There is an evident deviation from the assumption of \emph{proportional
+  hazards}: It is cases with exactly one grandmother infant death that
+deviates. However, this does not disturb the main conclusion: Two or more
+grandmother infant deaths is harmful, quite in line with the results from
+the Poisson regression.  
 
 \subsection{Extended models}
 
@@ -612,8 +650,7 @@ ltx(fit.w, dr = dr.w, caption = "Weibull regression, extended model.", digits = 
 @
 
 
-
-<<weibfit, fig.cap = "Weibull cumulative hazard vs. Nelson-Aalen estimate.">>=
+<<weibfit, fig.cap = "Weibull cumulative hazard vs. Nelson-Aalen estimate.", fig.height = 3.8>>=
 check.dist(fit.w, fit.c2, main = "", col = c("blue", "red"))
 abline(h = 0)
 @
@@ -628,7 +665,7 @@ The advantage of the parametric (Weibull) model vs.\ the Cox regression model is
 
 We modify the model by \emph{stratifying on grandmother's number of infant deaths} (with the categories \emph{"0", "1", "2+"}) and plot the result, see Figure~\ref{fig:weibstrat}.
 
-<<weibstrat, fig.cap = "Baseline hazards from the stratified Weibull regression.">>=
+<<weibstrat, fig.cap = "Baseline hazards from the stratified Weibull regression.", fig.height = 4.1>>=
 fit.ws <- phreg(Surv(exit - enter, event) ~ strata(gmDeaths) + childBirthdate + parity, data = ef)
 ##drws <- drop1(fit.ws, test = "Chisq")
 ##ltx(fit.ws, dr = drws, caption = "Baseline hazards from the stratified Weibull regression.", label = "tab:weibstrat")
