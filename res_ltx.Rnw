@@ -47,12 +47,7 @@ mortality rates shifted over time, from about 200 per thousand in the
 beginning of the 
 nineteenth century to approximately 100 per thousand in the 1890s, most
 families never 
-experienced an infant death. About 67 per cent of all women that gave birth
-would see their offspring survive their first year of life regardless of
-how many children they conceived, compared to 64 per cent, which is the expected value without any clustering. Various explanations have been proposed
-to this apparently complex phenomenon, including different aspects of
-inter-generational transmissions: genetic, cultural, socio-economic and
-environmental factors or a combination of these. Today there seems to be
+experienced an infant death.  Today there seems to be
 consensus that the non-uniform distribution of infant deaths among families is a
 complex interplay of different factors, difficult to identify
 and separate.  The observed family dependency has led to an increased attention to a possible intergenerational transmission of demographic patterns \citep{edja12}, sometimes even considering epigenetic effects \citep{pem14}.
@@ -75,6 +70,7 @@ in terms of statistical analysis.
 Finally, one should also be aware of the fact that clustering emerges
 naturally from pure randomness, often very counterintuitive. This is
 discussed by \citet{hb12}.
+
 \section{Area}
 
 The area under study is the 19th century Skellefteå region in the province of
@@ -82,9 +78,7 @@ Västerbotten in the northern part of Sweden. The region was vast, and
 consisted at the outset of the study of 
 one large rural parish, Skellefteå parish. In 1875, the northern part,
 Byske was detached into a separate administrative unit, but the population
-is nevertheless included in the study until 1900. Before 1834 the analyses
-also include the population in Jörn and Norsjö parishes, which until then
-were part of Skellefteå parish.  The region was large, both in terms of
+is nevertheless included in the study until 1900.  The region was large, both in terms of
 area and of population. With an area of about 1700 square miles,
 Skellefteå was considerably larger than most rural parishes in Sweden. It
 was considered a one-day’s journey to travel from the northern to the
@@ -112,7 +106,7 @@ more pronounced throughout the 19th century. The increasing
 proletarianization was mainly a consequence of rapid population growth. The
 number of farming households remained fairly stable, while the number of
 landless households increased. The socio-economic development was also
-influenced by to two devastating subsistence crises in the region, in the
+influenced by two devastating subsistence crises in the region, in the
 1830s and in the 1860s \citep{eng05}.  
 
 Infant mortality was comparatively low. Fertility was high, not only by Swedish
@@ -175,7 +169,7 @@ continuous record of all demographic events for all individuals residing in
 a parish, making it possible to follow individuals over time and to
 identify their relatives. Furthermore, a rich variety of additional
 information, for example on occupation, was recorded. A selected number of
-parishes are digitalized by the Demographic Data Base at Umeå University
+parishes are digitized by the Demographic Data Base at Umeå University
 (\url{http://www.cedar.umu.se/}). The entries in the catechetical registers and
 the birth, death, marriage and migration registers have been linked, making
 it possible to analyse life courses of individuals while present in the
@@ -210,8 +204,7 @@ The public IDS database is extracted from the POPLINK database, but only until 1
 
 
 It was easy to utilize the IDS data base with the aid of Quaranta's (2016)
-Stata script. The only drawback was that the script required \emph{Stata
-  14}, which is a quite expensive piece of software. Luckily, Stata
+Stata script. The only drawback was that the script required \emph{Stata}, which is a quite expensive piece of software. Luckily, Stata
 provides the possibility to 
 try the software for free during one month, and that was more than enough time to get
 the script running. However, this is of course not a sustainable state of
@@ -254,7 +247,7 @@ Some variables need to be redefined, centered and categorized. Here is a descrip
 
 \item[gmBirths] The number of grandmother's births. Is always (by design) two or larger. In the analyses it is categorized: "2", "3", "4-6", "7+".
 
-\item[mBirthdate] Mother's birthdate expressed as years between 1 January 1 and her day of birth, minus one, \emph{minus 1840}(!). An example: A woman born 3 April 1842 gets the value 1862.253 to begin with. Then subtract 1840, and the value is 2.253. The reason for this \emph{centering} around 1840 is \emph{good statistical practice}: The reference point (zero) of a covariate should lie within the range of the variable in regression analyses.
+\item[mBirthdate] Mother's birthdate expressed as years between 1 January 1 and her day of birth, minus one, \emph{minus 1840}(!). An example: A woman born 3 April 1842 gets the value 1842.253 to begin with. Then subtract 1840, and the value is 2.253. The reason for this \emph{centering} around 1840 is \emph{good statistical practice}: The reference point (zero) of a covariate should lie within the range of the variable in regression analyses.
 
 \item[mAge] Mother's age at the birth of a child. Categorized into the intervals "17-19", "20-22", \ldots, "41-43", "44-49".
 
@@ -262,25 +255,26 @@ Some variables need to be redefined, centered and categorized. Here is a descrip
 
 \item[childBirthdate] The birthdate of a mother's child, centered in the same way as {\tt mBirthdate}.
 
-\item[gmIMR] Grandmother's infamt mortality rate, that is, the number of deaths divided by the number of births. Used as an alternative to {\tt gmDeaths} in some analyses.
+\item[gmIMR] Grandmother's infant mortality rate, that is, the number of deaths divided by the number of births. Used as an alternative to {\tt gmDeaths} in some analyses. It is also multiplied by 100 and thus measured on a scale ranging from 0 to 100.
 
 \item[sex] The sex of a mother's child.
+
 \end{description}
 
 
 <<redefine>>=
 ef$gmBirths <- cut(ef$G0_Births, c(1, 2.5, 3.5, 6.5, 25), labels = c("2", "3", "4-6", "7+"))
 ef$gmDeaths <- ef$G0_InfD_cat
-ef$gmIMR <- ef$G0_InfD / ef$G0_Births
+ef$gmIMR <- ef$G0_InfD / ef$G0_Births * 100
 ef$mAge <- ef$enter - 30
 ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 3.5, 6.5, 25), labels = c("1", "2", "3", "4-6", "7+"))
 ## ef$mBirthdate : See above!
 @
 
-\section{Results}
 
 
-\subsection{Descriptive statistics of the IDS extraction}
+
+\section{Descriptive statistics of the IDS extraction}
 
 The yearly numbers of births and deaths for the \emph{mothers in the data set} and, as a comparison, for the data in {\sc Poplink},  are shown in Figure~\ref{fig:numbirth}.
 
@@ -360,7 +354,7 @@ ef1 <- ef[!duplicated(ef$MotherID), ]
 ##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
 @
 
-\subsubsection*{The covered time period}
+\subsection*{The covered time period}
 
 Our study sample consists of all mothers born 1826--1950. The distribution of their birth years and their infant mortality (by year of child death) are shown in  Figure~\ref{fig:sample}. The distribution of the grandmothers' birthdates is unknown, not part of the IDS retrieval.  
 
@@ -379,7 +373,7 @@ plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality
 par(oldpar)
 @
 
-\subsubsection*{Grandmothers, mothers and mother--sisters}
+\subsection*{Grandmothers, mothers and mother--sisters}
 
 
 <<howmany>>=
@@ -411,7 +405,11 @@ How many grandmothers are also mothers (and vice versa)? The answer is \Sexpr{m.
 \Sexpr{round(m.gm / n.gm * 100, 2)} per cent of the grandmothers. This
 small amount is of no practical importance for the results.
 
+\section{Results}
+
 \subsection{Standard results}
+
+The standard models are common to the subgroups of this research project.
 
 \subsubsection*{Poisson regression}
 
@@ -604,6 +602,8 @@ the Poisson regression.
 
 \subsection{Extended models}
 
+This section is specific for the Skellefteå project.
+
 \subsubsection*{The Poisson model}
 
 It turns out that the model fit to data is somewhat better with \emph{number of births} as the offset (log scale). Also showing a slight improvement is to use {\tt gmIMR} as explanatory variable rather than her \emph{absolute number of deaths}. The IMR is defined as the number of infant deaths divided by the number of births. These changes also implies that the comparison \emph{mother vs. grandmother} happens on a probability scale rather than on the intensity one.
@@ -684,7 +684,7 @@ The advantage of the parametric (Weibull) model vs.\ the Cox regression model is
 We modify the model by \emph{stratifying} on {\tt gmDeaths} (with the categories "0", "1", "2+") and plot the result, see Figure~\ref{fig:weibstrat}.
 
 <<weibstrat, fig.cap = "Baseline hazards from the stratified Weibull regression.", fig.height = 4.1>>=
-fit.ws <- phreg(Surv(exit - enter, event) ~ strata(gmDeaths) + childBirthdate + parity, data = ef)
+fit.ws <- phreg(Surv(exit - enter, event) ~ strata(gmDeaths) + childBirthdate + parity + sex, data = ef)
 ##drws <- drop1(fit.ws, test = "Chisq")
 ##ltx(fit.ws, dr = drws, caption = "Baseline hazards from the stratified Weibull regression.", label = "tab:weibstrat")
 fit.w1 <- phreg(Surv(exit - enter, event) ~ gmDeaths + childBirthdate + parity, data = ef)
@@ -808,10 +808,8 @@ same problem. You may call it \emph{sensitivity analysis} \citep[chapter
 6]{co84} if you wish.  
 
 Third, when it comes to the results, we find a clear association between infant
-mortality among the mothers and the grandmothers. (An increase of doubling
-the risk, but also of 16 per cent increase if the grandmother had
-experienced an infant death among her children\footnote{Förstår inte detta.}). Another question is if
-this is of practical significance. (What can we say about that?\footnote{Tja, om sannolikheten att erfara ett spädbarnsdödsfall ökar från 38 till 45 procent, är det av nåt intresse?}) 
+mortality among the mothers and the grandmothers.  Another question is if
+this is of practical significance? The simplest model is the easiest to interpret: If grandmother has no infant deaths, then the probablility for mother to have one is 38 per cent, otherwise it is 45 per cent.  
 
 \section{Discussion}
 
