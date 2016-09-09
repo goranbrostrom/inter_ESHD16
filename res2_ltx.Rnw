@@ -1,0 +1,808 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{natbib}
+%\usepackage{hyperref}
+\usepackage{url}
+
+\usepackage[tablesonly]{endfloat}
+\renewcommand{\efloatseparator}{\mbox{}}
+\bibliographystyle{apalike}
+
+\title{Clustering and intergenerational transfers of infant mortality in 19th century
+  northern Sweden\footnote{Paper presented in the session \emph{Analyses of the intergenerational transfers in infant mortality on databases using the 
+Intermediate Data Structure (1)}, 2016 European Society of Historical Demography Conference, Leuven, 21--24 September 2016.}}
+\author{Elisabeth Engberg, Sören Edvinsson, and Göran Broström}
+
+\date{September 22, 2016}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This study is part of an international comparative initiative where the same analyses are performed on data sets from different regions, all available in IDS format.
+It is shown that the IDS data structure indeed can deliver qualified data for demographic analysis. Moreover, we show that the propensity of infant death for a mother is inherited from mother to daughter.
+
+\end{abstract}
+
+\thispagestyle{empty}
+
+<<setup, include=FALSE>>=
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.height = 2.8, cache = TRUE)
+options(show.signif.stars = FALSE)
+library(knitr)
+library(eha)
+library(xtable)
+@
+
+\section{Introduction}
+
+This article has a threefold aim, including two methodological objectives and one demographic query. The first methodological aim is to assess the power of the IDS data format for demographic analysis. An evaluation of the data in applied research will be useful for further development of the IDS structure and for its future use in comparative research. The second methodological objective is to evaluate and compare different models for statistical analysis, in this case of inter-generational transfers. The third purpose is to apply the IDS-structure and the statistical modelling in a demographic study of a possible inter-generational transmission of mortality in infancy. 
+
+For more than 25 years it has been observed in numerous studies of
+historical and contemporary populations that infant deaths seem to be
+clustered into high-risk families. In a study of infant mortality in two
+regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
+found that infant deaths were not uniformly distributed; more families than expected had no infant death or two or more infant deaths. Despite the fact that infant
+mortality rates shifted over time, from about 200 per thousand in the
+beginning of the 
+nineteenth century to approximately 100 per thousand in the 1890s, most
+families never 
+experienced an infant death.  Today there seems to be
+consensus that the non-uniform distribution of infant deaths among families is a
+complex interplay of different factors, difficult to identify
+and separate.  The observed family dependency has led to an increased attention to a possible inter-generational transmission of demographic patterns \citep{edja12}, sometimes even considering epigenetic effects \citep{pem14}.
+
+Although the clustering of infant mortality appears to be a salient
+phenomenon throughout history, there are also major regional differences in
+the strength of the inter-generational transmission of infant
+mortality. While in certain regions the mortality history of infants is
+strongly correlated with the survival of infants in the previous
+generation, in other regions this effect is weak or completely absent
+\citep{belr08}. \citet{vande12} suggests that this can be
+attributed to differences in local culture and family systems, but also
+proposes the hypothesis that the variations also might be related to strong
+local variants in gene defects. In practice, regional differences could
+also be related to the fact that most studies focus on a limited number of
+rather small regions, and that different studies thus are hard to compare
+due to differences in methodology, both in terms of database management and
+in terms of statistical analysis. 
+
+Finally, one should also be aware of the fact that clustering emerges
+naturally from pure randomness, often very counter-intuitive. This is
+discussed by \citet{hb12}.
+
+\section{Area}
+
+The area under study is the 19th century Skellefteå region in the province of
+Västerbotten in the northern part of Sweden. At the outset of the study it consisted of one large rural parish, Skellefteå. By 1900 three new parishes had been detached into separate units, but their populations are still included in the study until 1900.  The region was large, both in terms of
+area and of population. With an area of about 1700 square miles,
+Skellefteå was considerably larger than most rural parishes in Sweden. It
+was considered a one-day journey to travel from the northern to the
+southern border, and a ride from the coast to the more remote and sparsely
+populated parts of the parish in the west could take even longer,
+especially in wintertime. The main part of the population was, however,
+concentrated in the coastal area and in river valleys.  In the early 19th
+century the population was around 6900, and it increased rapidly during the
+first half of the century. By 1850 it had reached to about 17\,000 and at the
+turn of the century it had further doubled.Despite the large increase in
+population, which was mainly the result of a high natural growth, the
+population density on the whole remained low \citep{as94}.
+
+Skellefteå was during the studied period a rural area with a mixed economy,
+based on animal husbandry, forestry and sidelines such as tar and saltpeter
+production. By the mid-19th century export of tar and lumber became an
+increasingly important part of the economy. The majority of the farmers in
+the region were smallholders and there were no large estates. Some small
+sawmills were established early in the century, but before 1900,
+industrialization had little impact on the local economy. In 1835,
+approximately 85 percent of the population made their living from
+farming. Although the distribution of economic resources was more uniform
+than in several other Swedish regions, the social stratification became
+more pronounced throughout the 19th century. The increasing
+proletarianization was mainly a consequence of rapid population growth. The
+number of farming households remained fairly stable, while the number of
+landless households increased. The socio-economic development was also
+influenced by two devastating subsistence crises in the region, in the
+1830s and in the 1860s \citep{eng05}.  
+
+Infant mortality was comparatively low. Fertility was high, not only by Swedish
+standards, but also in European comparison and there are no
+indications of family planning. Total fertility fluctuated around five
+children per woman and, although fertility did decline during the
+nineteenth century, the actual fertility transition occurred late in the
+district \citep{as94,coa86}. The rate of illegitimacy was low in comparison
+with many other parts of Northern Sweden, where frequent pre-nuptial
+conceptions and illegitimate births were common. The illegitimacy rate
+fluctuated between three and six per cent during the nineteenth century
+\citep{as94}. 
+
+
+
+
+
+\section{Data sources}
+
+The analysis is based on information found in the Swedish church book
+records, that is, birth, death, migration, and catechetical registers
+\citep{ndj93}. In the catechetical registers the clergy kept 
+continuous records of all demographic events for all individuals residing in
+a parish. These detailed records make it possible to follow individuals over time and to
+identify their relatives and kin over time and throughout the life course. Furthermore, a rich variety of additional
+information, for example on occupation, was recorded.  From the 1970s, these records have been digitized by the Demographic Data Base at Umeå University, and individual level data from more than one hundred parishes are at present available for research in the databases POPUM and POPLINK (\url{http://www.cedar.umu.se/}). 
+
+In the databases, all entries in the  catechetical registers and
+in the birth, death, marriage and migration registers have been linked, enabling life course analyses of the population as long as individuals are present in the
+digitized regions. During recent years, the database has been extended
+with parish registers until the 1950s for the Skellefteå and Umeå
+regions. Data until 1950 are available in the anonymized data base POPLINK with a generational depth of up to 15 \citep{wee16}. The registration in POPLINK of the Skellefteå data starts in 1699 with birth records. The catechetical registers are available from 1720. Unfortunately there are flaws in the 18th century data about infant deaths.  Children that died young are under-reported in the 18th century catechetical registers, and the death registers are missing before 1815. Hence the analysis in this paper is restricted to the 19th century. It includes the reproductive history of women born 1826--50 and the association with the reproductive history of the previous generation. The public IDS database is extracted from the POPLINK database, but only until 1900 due to legal requirements of protection of privacy.
+
+
+\section{Implementation of IDS}
+
+
+It was easy to utilize the IDS data base with the aid of Quaranta's (2016)
+Stata script. The only drawback was that the script required \emph{Stata}, which is a quite expensive piece of software. Luckily, Stata
+provides the possibility to 
+try the software for free during one month, and that was more than enough time to get
+the script running. However, this is of course not a sustainable state of
+the matter: Efforts should be made to utilize less costly approaches. 
+
+Once we had the data, the analyses and report (this one) writing was
+performed in \emph{RStudio} \citep{rstudio} with the aid of the {\bf R}
+package {\tt knitr} \citep{knitr,xie15}. An environment that supports truly
+reproducible statistical research and is free in all aspects of the word.
+
+\section{Data}
+
+We use the data set that is created from the IDS data base with a standard extraction script \citep{lq16}.
+In the analyses presented here we are using {\bf R}, a free software environment for statistical computing and graphics \citep{R}. The study is limited to
+mothers born between Sunday, January 1, 1826 and Tuesday, December 31,  1850.
+
+<<loaddata>>=
+if (!file.exists("ef.rda")){
+    con <- url("http://capa.ddb.umu.se/ef.rda")
+    load(con)
+    save(ef, file = "ef.rda")
+    close(con)
+}else{
+    load("ef.rda")
+}
+ef$event <- as.logical(ef$event)
+levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
+ef$mBirthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
+ef$sex <- ef$Child_sex
+@
+
+\subsection{Variables}
+Some variables need to be redefined, centered and categorized. Here is a description.
+
+\begin{description}
+
+\item[mDeaths] The number of infant deaths a mother experiences. This is the basic \emph{response} variable in all models. In some cases it is categorized.
+
+\item[gmDeaths] The number of infant deaths a grandmother (mother's mother) experiences. It is the primary \emph{explanatory variable}. It is categorized in the categories "0", "1", and "2+".
+
+\item[gmBirths] The number of grandmother's births. Is always (by design) two or larger. In the analyses it is categorized: "2", "3", "4-6", "7+".
+
+\item[mBirthdate] Mother's birthdate expressed as years between 1 January 1 and her day of birth, minus one, \emph{minus 1840}(!). An example: A woman born 3 April 1842 gets the value 1842.253 to begin with. Then subtract 1840, and the value is 2.253. The reason for this \emph{centering} around 1840 is \emph{good statistical practice}: The reference point (zero) of a covariate should lie within the range of the variable in regression analyses.
+
+\item[mAge] Mother's age at the birth of a child. Categorized into the intervals "17-19", "20-22", \ldots, "41-43", "44-49".
+
+\item[parity] The birth order of a mother's child.
+
+\item[childBirthdate] The birthdate of a mother's child, centered in the same way as {\tt mBirthdate}.
+
+\item[gmIMR] Grandmother's infant mortality rate, that is, the number of deaths divided by the number of births. Used as an alternative to {\tt gmDeaths} in some analyses. It is also multiplied by 100 and thus measured on a scale ranging from 0 to 100.
+
+\item[sex] The sex of a mother's child.
+
+\end{description}
+
+
+<<redefine>>=
+ef$gmBirths <- cut(ef$G0_Births, c(1, 2.5, 3.5, 6.5, 25), labels = c("2", "3", "4-6", "7+"))
+ef$gmDeaths <- ef$G0_InfD_cat
+ef$gmIMR <- ef$G0_InfD / ef$G0_Births * 100
+ef$mAge <- ef$enter - 30
+ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 3.5, 6.5, 25), labels = c("1", "2", "3", "4-6", "7+"))
+## ef$mBirthdate : See above!
+@
+
+
+
+
+\section{Descriptive statistics of the IDS extraction}
+
+The yearly numbers of births and deaths for the \emph{mothers in the data set} and, as a comparison, for the data in {\sc Poplink},  are shown in Figure~\ref{fig:numbirth}.
+
+<<numbirth, fig.cap="Number of births and infant deaths and infant mortality by year.", fig.height = 6>>=
+oldpar = par(mfrow = c(2, 2))
+byear <- floor(ef$mBirthdate + ef$enter) + 1840
+x <- table(byear)
+years <- names(x)
+x <- x[-length(x)]
+years <- years[-length(years)]
+plot(years, as.numeric(x), type = "l", xlab = "Birth/Death year", ylab = "Frequency", col = "blue", ylim = c(0, 1500), main = "Present data")
+dyear <- with(ef[ef$event, ], floor(mBirthdate + exit)) + 1840
+y <- table(dyear)
+years <- names(y)
+lines(years, as.numeric(y), type = "l", col = "red")
+abline(h = 0)
+text(1850, 130, "Deaths", col = "red")
+text(1825, 450, "Births", col = "blue")
+ss <- with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter))
+x <- perstat(ss, seq(1801,1901, by = 1), age = c(0, 1))
+plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l", 
+     ylim = c(0, 0.4), col = "blue")
+abline(h = 0)
+aver <- perstat(ss, seq(1801, 1901, by = 100), age = c(0, 1))$intensity
+abline(h = aver, col = "blue", lty = 2)
+## POPLINK:
+library(skum)
+per1 <- persons[persons$frsbobtyp == 2 & persons$region == "ske", c("foddat", "doddat")]
+per1$foddat <- as.numeric(tillTid(per1$foddat))
+per1$doddat <- as.numeric(tillTid(per1$doddat))
+per1 <- per1[!is.na(per1$foddat), ]
+per1$event <- with(per1, !is.na(doddat) & doddat - foddat <= 1)
+byear <- floor(per1$foddat)
+x <- table(byear)
+years <- as.numeric(names(x))
+x <- x[years < 1903]
+years <- years[years < 1903]
+plot(years, as.numeric(x), type = "l", col = "blue", xlim = c(1742, 1902), ylab = "",  xlab = "Birth/Death year", ylim = c(0, 1500), main = "POPLINK")
+dyear <- floor(per1$doddat[per1$event])
+y <- table(dyear)
+years <- as.numeric(names(y))
+y <- y[years < 1903]
+years <- years[years < 1903]
+
+lines(years, as.numeric(y), type = "l", col = "red")
+abline(h = 0)
+text(1850, 200, "Deaths", col = "red")
+text(1825, 700, "Births", col = "blue")
+ss <- with(obs, cbind(enter, exit, sluttyp == 2, birthdate))
+x <- perstat(ss, seq(1801, 1901, by = 1), age = c(0, 1))
+aver <- perstat(ss, seq(1801, 1901, by = 100), age = c(0, 1))$intensity
+plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "POPLINK", type = "l", 
+     ylim = c(0, 0.4), col = "blue")
+abline(h = 0)
+abline(h = aver, lty = 2, col = "blue")
+##plot(years, as.numeric(x) / as.numeric(y), xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l")
+par(oldpar)
+@
+
+The difference between the two data sets is of course explained by the fact that in the present data file there are restrictions on which births to include: Mother and grandmother present, grandmother must have at least two children, etc.
+
+
+<<loaddata2>>=
+ef <- ef[ef$mBirthdate + 1840 > 1826 & ef$mBirthdate + 1840 < 1851, ]
+##ef <- ef[ef$mBirthdate + 1825 > 1800, ] ## NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+##kable(summary(ef[, c("Child_sex", "Mother_birthdate", "mBirthdate", "enter", "exit", "event")]), type = "pandoc")
+@
+
+%The data frame is then aggregated to one record per mother for the Poisson regression approach, where  the influence of grandmother's %infant deaths on the number of her daughter's' infant deaths is studied.
+
+
+
+<<aggrfile>>=
+indx <- tapply(ef$MotherID, ef$MotherID)
+ef$mBirths <- with(ef, tapply(MotherID, MotherID, length)[indx])
+ef$mDeaths <- with(ef, tapply(event, MotherID, sum)[indx])
+ef$Mexpon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
+ef1 <- ef[!duplicated(ef$MotherID), ]
+##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
+@
+
+The average number of births to a mother in the data set is 
+\Sexpr{round(NROW(ef) / length(unique(ef$MotherID)), 2)}. The corresponding number for a grandmother is \Sexpr{round(mean(ef1$G0_Births), 2)}, but keep in mind that grandmothers are restricted to have at least two births, while mothers are restricted to have at least one birth. 
+
+\subsection*{The covered time period}
+
+Our study sample consists of all mothers born 1826--1950. The distribution of their birth years and their infant mortality (by year of child death) are shown in  Figure~\ref{fig:sample}. The distribution of the grandmothers' birthdates is unknown, because it is not part of the IDS retrieval. The first births ought to have appeared in the early 1800s.  
+
+
+
+<<sample, fig.cap = "Distribution of mother birth years and mothers' infant mortality rate by infant death year.">>=
+oldpar <- par(mfrow = c(1, 2))
+barplot(table(floor(ef1$mBirthdate + 1840)), xlab = "Year", main = "", 
+col = "lightblue",ylab = "Frequency")
+##abline(h = 0)
+
+## IMR:
+years <- seq(1845, 1895, by = 1)
+x <- perstat(with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter)), years, c(0, 1))
+plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality", col = "blue")
+par(oldpar)
+@
+
+\subsection*{Grandmothers, mothers and mother--sisters}
+
+
+<<howmany>>=
+n.m <- nrow(ef1) # No. of mothers
+n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
+x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
+@
+
+There are \Sexpr{n.m} mothers and \Sexpr{n.gm} grandmothers in the data, so
+obviously there are many sister groups among mothers in the data. This fact
+induces dependencies in the data set, which may either be a problem (using
+methods assuming independence), but it may also be possible to turn this
+fact into an advantage (using mixed effects models and think of
+inter-generational transfer as similarity between siblings). In the latter
+case the explanatory variable {\tt gmIMR} is replaced by
+clustering on grandmother.
+
+The distribution of the sizes of sibling groups is shown in Figure~\ref{fig:sibmoth}.
+
+<<sibmoth, fig.cap = "Distribution of sister group sizes.">>=
+barplot(x, xlab = "Size", ylab = "Frequency")
+@
+
+<<countgm>>=
+m.gm <- with(ef1, sum(unique(GrandmotherID) %in% MotherID)) 
+@
+
+How many grandmothers are also mothers (and vice versa)? The answer is \Sexpr{m.gm}, or 
+\Sexpr{round(m.gm / n.gm * 100, 2)} per cent of the grandmothers. This
+small amount is of no practical importance for the results.
+
+\section{Results}
+ 
+The first section of the results, with the standard models, reports the analyses that are the same for all the different participants. 
+The data are first analyzed with Poisson regression, and thereafter with survival analysis. In the second section, with the extended models, alternative approaches and models are investigated.
+ 
+
+\subsection{Standard models}
+
+\subsubsection*{Poisson regression}
+
+The expected value of the number of infant deaths $D_i$ for mother No. $i, \, i = 1, \ldots, n$, is modeled by a Poisson distribution as 
+\begin{equation*}
+E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
+\end{equation*}
+where $R_i$ is total risk time for mother No. $i$, $\mathbf{x}_i$ a vector of her explanatory variables, and $\boldsymbol{\beta}_i$ is the vector of regression coefficients. (For a mother with no infant deaths, the risk time is equal to her number of births.)
+Formally, $R_i$ is entered into the model as an \emph{offset} after taking logs. 
+
+The results are presented in two steps: First, \emph{the statistical significance} is calculated and shown, in Figure~\ref{fig:poisp}.
+The solid horizontal red line at 5\% is our (conventionally) chosen nominal limit for statistical significance. The dashed line is the limit that should be respected in honor of the \emph{multiple comparisons} situation \citep{holm79}. The first (leftmost) covariate, {\tt gmDeaths}, is  clearly statistically significant, while {\tt gmBirths} is just barely significant. {\tt mBirthdate} is clearly out. 
+%Table~\ref{tab:poisson}, 
+Second, the \emph{effect sizes} are graphically evaluated in Figure~\ref{fig:poiseff}. 
+
+
+<<poisson>>=
+options(digits = 8)
+fit.p <- glm(mDeaths ~ offset(log(Mexpon)) + gmDeaths + gmBirths + mBirthdate, data = ef1, family = poisson)
+dr <- drop1(fit.p, test = "Chisq")
+@
+
+<<poisp, fig.cap = 'LRT p-values for the covariates, Poisson regression. The dashed line is the significance limit with  "multiple comparisons" correction.'>>=
+pv <- dr[[5]][-1]
+names(pv) <- c("gmDeaths", "gmBirths", "mBirthdate")
+xp <- sort(pv)
+n <- length(xp)
+mplin <- 1/(n:1) * 0.05
+plot(1:3, xp, type = "h", axes = FALSE, xlab = "Covariates", ylab = "p-value")
+points((1:3)[xp < mplin], xp[xp < mplin], col = "darkgreen", pch = 19, cex = 1.5)
+points((1:3)[xp >= mplin], xp[xp >= mplin], col = "red", pch = 18, cex = 1.5)
+axis(1, at = 1:n, labels = names(xp))
+axis(2, at = c(0, 0.05, 0.2), las = 1, labels = c("0", "5%", "20%"))
+box()
+abline(h = 0.05, col = "red", lty = 1)
+abline(h = 0)
+lines(1:3, 1 / (n:1) * 0.05, col = "magenta", lty = 2)
+##barplot(sort(pv))
+
+@
+
+<<poist, results = "asis", include = FALSE>>=
+xtable(dr, caption = "Analysis of deviance (likelihood ratio tests). Poisson regression.", 
+       label = "tab:poisson", digits = c(0, 0, 4, 4, 4, 4))
+x <- summary(fit.p)$coefficients
+##outp <- matrix(0, ncol = 4, nrow = 6)
+##outp[, 1] <- c(x[1, 1], NA, x[, 1][-1])
+##outp[, 2] <- c(x[1, 2], NA, x[, 2][-1])
+##outp[, 3] <- exp(outp[, 1])
+##outp[, 4] <- c(dr[[5]][1:2], NA, NA, dr[[5]][3], dr[[5]][4])
+##rownames(outp) <- c("(intercept)  ", "G0_InfD   0", "          1", "          2+", "G0_Births", ##"Mother_Birthdate")
+##colnames(outp) <- c("Coef", "S.E.", "exp(Coef)", "L-R p")
+##knitr::kable(outp, format = "pandoc", caption = "Table 2. Poisson regression.", label = "tab:tab1")
+##outp
+##print(xtable(outp), type = "html")
+##summary(fit)
+@
+
+So, the likelihood ratio test (LRT) shows that {\tt gmDeaths} and {\tt gmBirths} are highly \emph{statistically} significant in the model. 
+
+So, the important result is the \emph{practical} significance, the effect sizes. Figure~\ref{fig:poiseff} shows the \emph{expected risks} of infant death by the number of grandmother's deaths and the number of her births. 
+
+<<poiseff, fig.cap = "Infant mortality by grandmother's number of infant deaths (left) and grandmother's number of births(right). Comparisons made at reference value of other covariates.">>=
+cat0 <- exp(fit.p$coef[1])
+cat1 <- exp(sum(fit.p$coef[1:2]))
+cat2 <- exp(sum(fit.p$coef[c(1, 3)]))
+oldpar <- par(mfrow = c(1, 2))
+##barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+  ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+
+barplot(100 * c(cat0, cat1, cat2), names.arg = c("0", "1", "2+"), 
+        ylim = c(0, 9), ylab = "IMR (per cent)", xlab = "gmDeaths")
+cat0 <- exp(fit.p$coef[1])
+cat1 <- exp(sum(fit.p$coef[c(1, 4)]))
+cat2 <- exp(sum(fit.p$coef[c(1, 5)]))
+cat3 <- exp(sum(fit.p$coef[c(1, 6)]))
+
+##barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+  ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+
+barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"), 
+    ylab = "IMR (per cent)", xlab = "gmBirths")
+
+@
+
+
+\subsubsection*{Survival analysis}
+
+The {\bf R} package {\tt eha} \citep{eha, ehar12} is used, and the
+explanatory variables are almost the same as in the Poisson regression
+analysis. The difference is that instead of {\tt mBirthdate}, the
+{\tt childBirthdate} is used (no big difference), and a new variable, {\tt mAge}, is introduced. It is categorized into three-year intervals. Other covariates, {\tt parity},  etc. are omitted, since they do not contribute much to the model. 
+
+<<surv,results='asis'>>=
+##ef$G0InfD <- ef$G0_InfD_cat
+##ef$G0Births.c <- ef$G0_Births -
+##ef$mAge <- ef$enter - 32
+##ef$mAge2 <- (ef$mAge)^2
+##ef$mAge3 <- (ef$mAge)^3
+ef$mAge <- cut(ef$enter, c(seq(16.99, 43.99, by = 3), 49.99), labels = c("17-19", "20-22", "23-25", "26-28", "29-31", "32-34", "35-37", "38-40", "41-43", "44-49"))
+ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.c <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths + #childBirthdate + 
+                    ###strata(parity) + 
+                    mAge, data = ef)
+dr.c <- drop1(fit.c, test = "Chisq")
+ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.", 
+       label = "tab:surv", digits = 4)
+@
+
+The standard tabular form of results is shown in Table~\ref{tab:surv}, and
+the main features of the fit are shown graphically.
+First, the statistical significance of involved covariates is found in
+Figure~\ref{fig:siginv}. The $p$-values are marked as small filled (green)
+circles for $p$values falling below the dashed line showing significance
+at the 5\% level even in the presence of a multiple comparisons correction. 
+The $p$-values are ordered increasingly from left to right in the
+figure. All included covariates have a significant influence on the model fit.
+
+
+<<siginv, fig.cap = 'LRT p-values for the covariates, Cox regression. Dashed line is significance limit with "multiple comparisons" correction.'>>=
+p <- numeric(3)
+p[1] <- dr.c[[4]][2]
+p[2] <- dr.c[[4]][3]
+p[3] <- dr.c[[4]][4]
+##fit.cb <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths, data = ef)
+##cstat <- 2 * (fit.c$loglik[2] - fit.cb$loglik[2])
+##p[3] <- pchisq(cstat, df = 2, lower.tail = FALSE)
+names(p) <- c("gmDeaths", "gmBirths", "mAge")
+p <- sort(p)
+mplin <- 1 / (n:1) * 0.05
+plot(1:3, p, type = "h", ylab = "p-value", xlab = "Covariates", axes = FALSE, ylim = c(0, 0.055))
+axis(1, at = 1:3, labels = names(p))
+axis(2, at = c(0, 0.05), labels = c("0", "5%"), las = 1)
+abline(h = 0.05, col = "red")
+points(1:3, p, col = "darkgreen", pch = 19, cex = 1.5)
+lines(1:3, mplin, lty = 2, col = "magenta")
+box()
+abline(h = 0)     
+@
+
+Second, the effects are shown in Figure~\ref{fig:effstcox}. For the
+covariate {\tt gmDeaths}, the real effect on
+her daughter's risk of experiencing infant deaths appears when the number
+of deaths are two or larger. {\tt gmBirths} is also
+influential, as is {\tt mAge} with its characteristic $U$-shaped
+effect on infant mortality. 
+
+<<effstcox, fig.cap = "Effects of included covariates, Cox regression. The leftmost value is the reference in all panels.", fig.height = 2.3>>=
+source("R/eff.R")
+oldpar <- par(mfrow = c(1, 3))
+sdp <- sqrt(diag(fit.c$var))
+##gmDeaths:
+eff.fact(fit.c$coef[1:2], sdp[1:2], labs = fit.c$levels[[1]], xlab = "No. of GM deaths")
+##c0 <- 0
+##c1 <- 100 * (exp(fit.c$coef[1]) - 1)
+##c2 <- 100 * (exp(fit.c$coef[2]) - 1)
+##barplot(c(c0, c1, c2), names.arg = c("0", "1", "2+"), main = "No. of GM deaths", ylab = "Rel. Risk ##increase (per cent)", ylim = c(0, 60))
+##gmBirths:
+eff.fact(fit.c$coef[3:5], sdp[3:5], labs = fit.c$levels[[2]], xlab = "No. of GM births")
+##c0 <- 0
+##c1 <- 100 * (exp(fit.c$coef[3]) - 1)
+##c2 <- 100 * (exp(fit.c$coef[4]) - 1)
+##c3 <- 100 * (exp(fit.c$coef[5]) - 1)
+##barplot(c(c0, c1, c2, c3), names.arg = c("2", "3", "4-6", "7+"), main = "No. of GM births", ylab = "Rel. ##Risk increase (per cent)", ylim = c(0, 60))
+## mAge:
+eff.fact(fit.c$coef[6:14], sdp[6:14], labs = fit.c$levels[[3]], xlab = "Mother's age")
+##x <- seq(20, 45, length = 25)
+##y <- exp(fit.c$coef[6] * (x - 32) + fit.c$coef[7] * (x - 32)^2) - 1
+##plot(x, 100 * y, xlab = "Age", type = "h", main = "Mother's age", ylab = "Rel. Risk increase (per cent)", ##axes = FALSE, ylim = c(0, 60))
+##axis(1, at = c(20, 25, 32, 40, 45))
+##axis(2)
+##box()
+##abline(h = 0)
+par(oldpar)
+@
+
+The estimated cumulative hazards functions for the strata of
+{\tt gmDeaths} are shown in Figure~\ref{fig:relcumhaz}.
+
+<<relcumhaz, fig.cap = "Cumulative hazards by the number of grandmother's infant deaths.", fig.height = 3.2>>=
+fit.str <- coxreg(Surv(exit - enter, event) ~ strata(gmDeaths) + gmBirths + mAge, data = ef)
+plot(fit.str, col = 1:3, xlab = "Age", ylab = "Cumulative hazards")
+@
+
+There is an evident deviation from the assumption of \emph{proportional
+  hazards}: It is cases with exactly one grandmother infant death that
+deviates. However, this does not disturb the main conclusion: Two or more
+grandmother infant deaths is harmful, quite in line with the results from
+the Poisson regression.  
+
+\subsection{Extended models}
+
+Findings that are specific for the Skellefteå project are presented here. The emphasis is that it generally is a good idea to look at a problem from different angles. 
+
+\subsubsection*{The Poisson model}
+
+It turns out that the model fit to data is somewhat better with \emph{number of births} as the offset (log scale). Also showing a slight improvement is to use {\tt gmIMR} as explanatory variable rather than her \emph{absolute number of deaths}. The IMR is defined as the number of infant deaths divided by the number of births. These changes also implies that the comparison \emph{mother vs. grandmother} happens on a probability scale rather than on the intensity one.
+
+<<refinedpois, results = "asis">>=
+
+fit.p2 <- glm(mDeaths ~ offset(log(Mexpon)) + gmIMR + mBirthdate + parity, data = ef1, family = poisson)
+dr <- drop1(fit.p2, test = "Chisq")
+xtable(dr, caption = "Poisson regression, grandmother's IMR. Analysis of deviance.", digits = 5, label = 'tab:refinedpois')
+@
+
+The general conclusion is not changed: Grandmother's IMR has a strong
+influence on her daughter's IMR. 
+
+The size of the effect is shown in Figure~\ref{fig:plotimr}.
+
+<<plotimr, fig.cap = "Probability of infant death for mother (M IMP) by IMR for grandmother (GM IMR). Poisson regression.">>=
+x <- seq(0, 100, length = 1000)
+mimr <- with(fit.p2, exp(coefficients[1] + coefficients[2] * x))
+plot(x, mimr, type = "l", col = "blue", xlab = "GM_IMR (per cent)", ylab = "M_IMP", ylim = c(0, 0.20))
+abline(h = 0)             
+@
+
+\subsubsection*{Survival analysis}
+
+The same modification as in the Poisson case is introduced here.
+
+<<extsurv,results='asis'>>=
+ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.c2 <- coxreg(Surv(exit - enter, event) ~ gmIMR + childBirthdate + parity + sex, data = ef)
+dr.c2 <- drop1(fit.c2, test = "Chisq")
+ltx(fit.c2, dr = dr.c2, caption = "Cox regression, extended model.", digits = 4, label = "tab:extsurv")
+@
+
+The regression coefficient for {\tt gmIMR} is \Sexpr{round(fit.c2$coef[1], 3)}, highly statistically significant, as seen in Table~\ref{tab:extsurv}. The other covariates are of less importance.
+
+\paragraph{Dependency structures}
+
+There are a couple circumstances that introduce dependence structures in the data: Infants being siblings share genetic and environmental unmeasurable properties, some mothers have sisters that themselves are present as mothers, thus sharing grandmother. Possible ways of handling the situation are \emph{shared frailty models} \citep{aalen08} and the implementation of \emph{robust variances} \citep{extcox00}. We have tried both, but neither do change the results in any noticeable way.
+
+A radical way to eliminate the sibling effect among infants is to include the firstborn for each mother. We get the results shown in Table~\ref{tab:extsurv1}.
+
+<<extsurv1,results='asis'>>=
+ef3 <- ef[ef$parity == 1, ]
+fit.c3 <- coxreg(Surv(exit - enter, event) ~ gmIMR + childBirthdate + sex, data = ef3)
+dr.c3 <- drop1(fit.c3, test = "Chisq")
+ltx(fit.c3, dr = dr.c3, caption = "Cox regression, extended model with only one birth per mother.", digits = 4, label = "tab:extsurv1")
+@
+
+The effect of {\tt gmIMR} is even stronger for firstborn than generally (estimated to \Sexpr{round(fit.c3$coef[1], 3)}), however, the statistical significance is weak, a logical consequence of the much lower number of infant deaths (compare Tables~\ref{tab:extsurv}~and~\ref{tab:extsurv1}).
+
+\paragraph{Parametric proportional hazards}
+
+The Weibull model usually fits infant mortality data well. Let us check this (Table~\ref{tab:weibsurv}).
+
+<<weibsurv,results='asis'>>=
+##ef$G0.IMR <- ef$G0_InfD / ef$G0_Births
+##ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.w <- phreg(Surv(exit - enter, event) ~ gmIMR + childBirthdate + parity + sex, data = ef)
+dr.w <- drop1(fit.w, test = "Chisq")
+ltx(fit.w, dr = dr.w, caption = "Weibull regression, extended model.", digits = 4, label = "tab:weibsurv")
+@
+
+
+<<weibfit, fig.cap = "Weibull cumulative hazard vs. Nelson-Aalen estimate.", fig.height = 3.8>>=
+check.dist(fit.w, fit.c2, main = "", col = c("blue", "red"))
+abline(h = 0)
+@
+A graphical comparison of the Weibull and nonparametric baseline cumulative hazards (Figure~\ref{fig:weibfit})
+shows an exceptionally good fit. 
+
+The advantage of the parametric (Weibull) model vs.\ the Cox regression model is that we can effortlessly estimate the baseline hazard function (no kernel estimation with ad hoc bandwidth selection). It is further possible to \emph{formally test} the hypothesis of proportional hazards for a categorical covariate through stratification and the LRT test. If proportionality is rejected it is still possible to test for non-proportional effects. (Logically, if proportionality is rejected, then there cannot be equality, but statistical hypothesis testing is not always logical in a common sense. Best to make sure.)
+
+
+\subparagraph{Test of proportionality}
+
+
+The model with \emph{stratifying} on {\tt gmDeaths} (with the categories "0", "1", "2+") gives the result shown in Figure~\ref{fig:weibstrat}.
+
+<<weibstrat, fig.cap = "Baseline hazards from the stratified Weibull regression.", fig.height = 4.1>>=
+fit.ws <- phreg(Surv(exit - enter, event) ~ strata(gmDeaths) + childBirthdate + parity + sex, data = ef)
+##drws <- drop1(fit.ws, test = "Chisq")
+##ltx(fit.ws, dr = drws, caption = "Baseline hazards from the stratified Weibull regression.", label = "tab:weibstrat")
+fit.w1 <- phreg(Surv(exit - enter, event) ~ gmDeaths + childBirthdate + parity, data = ef)
+ts <- fit.ws$loglik[2]
+t1 <- fit.w1$loglik[2]
+teststat <- round(2 * (ts - t1), 3)
+pval <- round(pchisq(teststat, df = 2, lower.tail = FALSE), 4)
+par(mfrow = c(1, 2))
+plot(fit.ws, fn = "cum", col = c(1, 2, 4), lty = c(1, 2, 4), main = "Cumulative hazards", xlab = "Age", ylab = "")
+abline(h = 0)
+abline(v = 0)
+plot(fit.ws, fn = "haz", col = c(1, 2, 4), lty = c(1, 2, 4), main = "Hazards", xlab = "Age",ylim = c(0, 0.4), printLegend = FALSE)
+abline(h = 0)
+abline(v = 0)
+par(mfrow = c(1, 1))
+@
+
+A formal test rejects the hypothesis of proportional hazards (no surprise), and a further test of equality of the curves also rejects (ditto). This is in exact agreement with our conclusion regarding the Cox regression model (Figure~\ref{fig:relcumhaz}). For the stratified Weibull model, the shape and scale parameters both vary freely over the strata, while in the non-stratified model (but with {\tt gmDeaths} as a covariate instead of defining strata), the shape parameter is the same in all strata. So the stratified model requires six baseline parameters to estimate, while the non-stratified only requires four.
+
+The LR test now takes two times the difference of the two maximized log likelihoods, which under the null hypothesis (no stratification necessary) is $\chi^2$-distributed with $6 - 4 = 2$ degrees of freedom. 
+The maximized log-likelihood values are \Sexpr{round(ts, 1)} and \Sexpr{round(t1, 1)}, so the test statistic is observed to be
+\Sexpr{teststat}, which with two degrees of freedom gives a $p$-value of \Sexpr{pval}. So the null hypothesis is rejected.
+
+\subsubsection*{A 2-by-2 table}
+
+In order to make it really simple, let us just record whether a mother and a grandmother experienced an infant death or not. The result is, in tabular form,
+
+<<twotwo, results = 'asis'>>=
+gmD <- ef1$gmDeaths != 0
+mD <- ef1$mDeaths > 0 
+y <- table(mD, gmD)
+zz <- fisher.test(y)
+@
+
+
+\begin{center}
+\begin{tabular}{l|rr|r}
+     & \multicolumn{2}{l}{\bf Mother death} & \\ \hline
+\bf Grandmother death & No & Yes & \bf Sum \\ \hline
+No & \Sexpr{y[1, 1]} & \Sexpr{y[1, 2]} & \Sexpr{sum(y[1, ])} \\
+Yes & \Sexpr{y[2, 1]} & \Sexpr{y[2, 2]} & \Sexpr{sum(y[2, ])} \\ \hline
+\bf Sum & \Sexpr{sum(y[, 1])} & \Sexpr{sum(y[, 2])} & \Sexpr{sum(y)} \\ \hline
+\end{tabular}
+\end{center}
+
+The \emph{odds ratio} in this table is \Sexpr{round(zz$estimate, 2)}, and \emph{Fisher's exact test} \citep{fisher22} gives a $p$-value of \Sexpr{round(zz$p.value, 4)} and a 95\% confidence interval 
+(\Sexpr{round(zz$conf.int, 2)}). Expressed in probabilities: If no grandmother death, then the probability of a mother death is $605 / 1576 = 0.38$, while if grandmother experienced a death the corresponding probability is $298 / 671 = 0.44$, an increase by 16\%.
+
+An even simpler table is obtained if we do not allow siblings among mothers, that is, to each grandmother only one mother (her first-born daughter) is connected:
+
+<<twotwo2, results = 'asis'>>=
+gmD <- ef1$gmDeaths[!duplicated(ef1$GrandmotherID)] != 0
+mD <- ef1$mDeaths[!duplicated(ef1$GrandmotherID)] > 0 
+y <- table(mD, gmD)
+zz <- fisher.test(y)
+@
+
+
+\begin{center}
+\begin{tabular}{l|rr|r}
+     & \multicolumn{2}{l}{\bf Mother death} & \\ \hline
+\bf Grandmother death & No & Yes & \bf Sum \\ \hline
+No & \Sexpr{y[1, 1]} & \Sexpr{y[1, 2]} & \Sexpr{sum(y[1, ])} \\
+Yes & \Sexpr{y[2, 1]} & \Sexpr{y[2, 2]} & \Sexpr{sum(y[2, ])} \\ \hline
+\bf Sum & \Sexpr{sum(y[, 1])} & \Sexpr{sum(y[, 2])} & \Sexpr{sum(y)} \\ \hline
+\end{tabular}
+\end{center}
+
+Now, the \emph{odds ratio} in this table is \Sexpr{round(zz$estimate, 2)}, and \emph{Fisher's exact test} \citep{fisher22} gives a $p$-value of \Sexpr{round(zz$p.value, 4)} and a 95\% confidence interval 
+(\Sexpr{round(zz$conf.int, 2)}). Expressed in probabilities: If no grandmother death, then the probability of a mother death is \Sexpr{round(y[1, 2] / sum(y[1, ]), 2)}, while if grandmother experienced a death the corresponding probability is \Sexpr{round(y[2, 2] / sum(y[2, ]), 2)}, an increase by 16\%.
+
+An astonishing similarity!
+
+\paragraph{The 2-by-2 table with covariates}
+
+We can of course analyze these table data by \emph{binomial regression}, including the same covariates as earlier. Since the results from this exercise do not differ from earlier results, we refrain from showing them.
+
+<<getef2>>=
+ef2 <- ef1[!duplicated(ef1$GrandmotherID), ]
+ef2$gmD <- ef2$gmDeaths != "0" 
+ef2$mD <- ef2$mDeaths > 0
+fit <- glm(mD ~ gmD + G0_Births + mBirthdate, data = ef2, family = binomial)
+#summary(fit)
+@
+
+\section{Concluding discussion}
+
+Three main aims were set out for this article. The first was about
+assessing the power of the IDS data format for demographic analysis, in
+this case in relation to transnational comparative research.
+We can confirm that applying the IDS format, and the general script made by
+\citet{lq16}, has fulfilled its purposess well. The use of the script has
+facilitated comparisons between countries. 
+However, it is important to remember that the IDS format do not relieve the
+researcher from the duty of carefully evaluating the sources and their usefulness for
+the research questions raised. In the database for the Skellefteå region,
+we had to restrict our studied period substantially, due to deficient data
+for the 18th century, where infant deaths were severely underestimated. 
+This problem can eventually be taken care of by applying clear definitions of rules on how to 
+identify infant deaths, but that must be performed in a preparatory state.
+
+Second, we have tried different analytic models, ranging from complicated
+(proportional hazards models for survival times of infants)
+to simple (had a woman and/or her oldest daughter an infant death or not: A
+contingency table analysis). ``Complicated'' refers to ``strong
+assumptions and strict model checking'': The hard part is dealing with the
+complicated dependency structures arising from sisters having the same
+mother and the dependency between life lengths of sibling infants. On the
+other hand, ``simple'' means almost no restrictive assumptions, no
+complicated dependency structures, and results
+that are directly interpretable in terms of simple-to-understand probabilities.
+As is often the case, simple is at least as good as complicated: The
+different models give similar results, and it is easy to feel confident in
+the ones with the weakest assumptions. On the other
+hand, it is generally good (statistical) practice to try different approaches to the
+analysis of the
+same problem. You may call it \emph{sensitivity analysis} \citep[chapter
+6]{co84} if you wish.  
+
+Third, when it comes to the results, we find a clear association between infant
+mortality among the mothers and the grandmothers.  Another question is if
+this is of practical significance? The simplest model is the easiest to interpret: If grandmother has no infant deaths, then the probability for mother to have one is 38 per cent, otherwise it is 45 per cent.  
+
+%%\section{Discussion}
+
+Our study confirms the existence of family dependency in infant mortality
+risks. How can the association be explained? This relates to the old debate
+of whether humans are primarily formed by nature or if nurture is
+important, a division that now is becoming muddled and partly obsolete due
+to recent scientific developments \citep{mel14}. In the
+analytic approach taken here, we cannot really distinguish between purely
+biological versus social and cultural factors, but there are
+possible pathways. 
+
+One obvious possible factor refers to genetics. People are differently frail and it is
+reasonable that this frailty is genetically transferred. This might affect childrens' 
+capacity of survival as well as factors related to the mother associated with delivery and her
+the ability to take care of the newborn. There are also
+other possible biological reasons. The Rh negative blood group is common in
+our region, thus increasing the risk for Rh disease. It has been shown that
+this condition did have some impact on perinatal health in the region, although on a
+fairly restricted level. Still it can still be a component in the observed
+association \citep{hle12}. Furthermore, a
+mother and her sibling group can have experienced problematic conditions in
+early childhood that may have scarred her for life, making her biologically
+less fit for child birth and thereby increasing the mortality risks for her
+children \citep{lq13}.   
+
+Can the survival of children have to do with transferred behaviours between
+generations? We know that the ways children are taken care of is crucial
+for their health and survival, particularly in a high mortality
+regime. This can relate to local patterns of childcare, for example to the
+practice of breast-feeding, but also to practices that are
+transferred within families. Our immediate family is the closest social
+organization for learning. In 19th century Sundsvall, mothers
+moving to the region kept their childcare practices from their home region in the new
+environment. Mothers from a high mortality region experienced a higher infant mortality and vice versa \citep{lgt04}.
+Another explanation for the association between generations is that they
+merely reflect similar living conditions, for example the physical
+environment they lived in or the belonging to the same social class. This
+could be more thoroughly analyzed in models where residence and/or social
+position are considered. 
+
+
+Regarding the results, the main hypothesis was confirmed: The risk for a
+woman to experience infant deaths is increased if her mother also had
+that experience. While statistically significant, the effect size is moderate. We applied different models, all plausible, and got almost
+identical results in all cases. 
+
+\bibliography{cluster,surv}
+
+\end{document}
