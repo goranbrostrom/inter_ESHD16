@@ -46,7 +46,7 @@ For more than 25 years it has been observed in numerous studies of
 historical and contemporary populations that infant deaths seem to be
 clustered into high-risk families. In a study of infant mortality in two
 regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
-found that infant deaths were not uniformly distributed; more families than expected had no infant death or two or more infant deaths. Despite the fact that infant
+found that infant deaths were not uniformly distributed; more families than expected had no infant death or two or more infant deaths.  Despite the fact that infant
 mortality rates shifted over time, from about 200 per thousand in the
 beginning of the 
 nineteenth century to approximately 100 per thousand in the 1890s, most
@@ -88,7 +88,7 @@ especially in wintertime. The main part of the population was, however,
 concentrated in the coastal area and in river valleys.  In the early 19th
 century the population was around 6900, and it increased rapidly during the
 first half of the century. By 1850 it had reached to about 17\,000 and at the
-turn of the century it had further doubled.Despite the large increase in
+turn of the century it had further doubled. Despite the large increase in
 population, which was mainly the result of a high natural growth, the
 population density on the whole remained low \citep{as94}.
 
@@ -138,7 +138,7 @@ In the databases, all entries in the  catechetical registers and
 in the birth, death, marriage and migration registers have been linked, enabling life course analyses of the population as long as individuals are present in the
 digitized regions. During recent years, the database has been extended
 with parish registers until the 1950s for the Skellefteå and Umeå
-regions. Data until 1950 are available in the anonymized data base POPLINK with a generational depth of up to 15 \citep{wee16}. The registration in POPLINK of the Skellefteå data starts in 1699 with birth records. The catechetical registers are available from 1720. Unfortunately there are flaws in the 18th century data about infant deaths.  Children that died young are under-reported in the 18th century catechetical registers, and the death registers are missing before 1815. Hence the analysis in this paper is restricted to the 19th century. It includes the reproductive history of women born 1826--50 and the association with the reproductive history of the previous generation. The public IDS database is extracted from the POPLINK database, but only until 1900 due to legal requirements of protection of privacy.
+regions. Data until 1950 are available in the anonymized data base POPLINK with a generational depth of up to 12 \citep{wee16}. The registration in POPLINK of the Skellefteå data starts in 1699 with birth records. The catechetical registers are available from 1720. Unfortunately there are flaws in the 18th century data about infant deaths.  Children that died young are under-reported in the 18th century catechetical registers, and the death registers are missing before 1815. Hence the analysis in this paper is restricted to the 19th century. It includes the reproductive history of women born 1826--50 and the association with the reproductive history of the previous generation. The public IDS database is extracted from the POPLINK database, but only until 1900 due to legal requirements of protection of privacy.
 
 
 \section{Implementation of IDS}
