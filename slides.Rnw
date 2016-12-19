@@ -1,0 +1,460 @@
+\documentclass[t,a4paper,11pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{natbib}
+
+%\usepackage[figuresonly]{endfloat}
+
+%\bibliographystyle{apalike}
+
+\usepackage{color}
+
+\newcommand{\emp}[1]{\textcolor{blue}{#1}}
+
+\usetheme{Singapore}% best choice.
+  \setbeamercovered{transparent}%
+
+\newcommand{\R}{{\bf R}}
+\newcommand{\code}[1]{{\tt #1}}
+
+\title{Clustering and intergenerational transfers of infant mortality in 19th century
+  northern Sweden
+  %\footnote{Paper presented in the session \emph{Analyses of the intergenerational transfers in infant %mortality on databases using the 
+%Intermediate Data Structure (1)}, 2016 European Society of Historical Demography Conference, Leuven, 21%--24 September 2016.}
+}
+
+\date{September 22, 2016}
+
+\author{Elisabeth Engberg, Sören Edvinsson, and Göran Broström}
+
+\begin{document}
+
+\maketitle
+
+<<setup, include = FALSE>>=
+library(knitr)
+opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height=5.5,fig.width=8,strip.white=TRUE,cache=TRUE,echo=FALSE,message=FALSE,comment=NA,show.signif.stars = FALSE)##$
+library(knitr)
+library(eha)
+library(xtable)
+load("ef.rda")
+ef$event <- as.logical(ef$event)
+levels(ef$G0_InfD_cat) <- c("0", "1", "2+", "2+")
+ef$mBirthdate <- as.numeric(ef$Mother_birthdate) / 365.2425 + 130 # 1840 == 0!
+ef$sex <- ef$Child_sex
+ef$gmBirths <- cut(ef$G0_Births, c(1, 2.5, 3.5, 6.5, 25), labels = c("2", "3", "4-6", "7+"))
+ef$gmDeaths <- ef$G0_InfD_cat
+ef$gmIMR <- ef$G0_InfD / ef$G0_Births * 100
+ef$mAge <- ef$enter - 30
+ef$parity <- cut(ef$Birth_order, c(0.5, 1.5, 2.5, 3.5, 6.5, 25), labels = c("1", "2", "3", "4-6", "7+"))
+
+@
+
+
+\begin{frame}{Aims and questions}  
+
+  \begin{enumerate}
+\item Assess the
+\emp{power of the IDS} data format for demographic analysis.
+\item \emp{Evaluate and compare different models} for
+statistical analysis. 
+\item Use data stored in the IDS format
+in a demographic study of a possible \emp{inter-generational transmission of
+mortality in infancy}.  
+\end{enumerate}
+
+\end{frame}
+  
+\begin{frame}{The Skellefteå region}
+
+\begin{itemize}  
+\item Selection of
+parishes surrounding the town of Skellefteå. 
+\item Town founded in 1843 but with a
+very small population during the first decades.
+\item The majority of the
+population in rural villages and hamlets, getting their
+livelihood from agricultural production. 
+\item 20th century: \emp{industrialisation}, population \emp{increase in the town},
+\emp{diversified economy}. 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Data sources}
+  
+\begin{itemize}
+\item \emp{Swedish church book} records
+\item digitized by the \emp{Demographic Data Base} at Umeå University, 
+\begin{itemize}  
+   \item \emp{\sc Popum} and 
+   \item \emp{\sc Poplink}
+\end{itemize}    
+\item  \url{http://www.cedar.umu.se/}
+\end{itemize}
+  
+\end{frame}
+
+\begin{frame}{IDS}
+
+\begin{itemize}  
+\item The \emp{public IDS database} is extracted from {\sc Poplink}
+\item It \emp{ends in 1900} (legal requirements).
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Data}
+
+\begin{itemize}
+\item \emp{Extracted} from IDS with \emp{Quaranta}'s Stata script.
+\item Limited to \emp{mothers born from} Sunday, \emp{Janary 1, 1826} to
+  Thursday,  \emp{December 31, 1850}, and
+\begin{itemize}
+  \item their mothers, and
+  \item their births.
+\end{itemize}
+\end{itemize} 
+
+\end{frame}  
+
+\begin{frame}{Software for analysis}
+  
+\begin{itemize}
+\item  \R : \emp{\url{https://www-R-project.org}}
+\item \R\ \emp{packages} (Swedish mirror: \emp{\url{http://ftp.acc.umu.se/mirror/CRAN/}}):
+  \begin{itemize}
+  \item \emp{skum} (Broström, 2016) data from \emp{DDB}
+  \item \emp{knitr} (Xie, 2016)
+  \item \emp{eha} (Broström, 2015)
+  \item \emp{xtable} (Dahl, 2016)
+\end{itemize}            
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Variables}
+  
+\begin{description}
+
+\item[mDeaths] The number of infant deaths a \emp{mother} experiences. The basic \emp{response} variable.
+
+\item[gmDeaths] The number of infant deaths a \emp{grandmother}
+  experiences. The primary \emp{explanatory variable}.
+
+\item[gmBirths] The number of grandmother's births.
+
+\item[mBirthdate] Mother's birthdate (centered).
+  
+\item[mAge] Mother's age at the birth of a child.
+
+\item[parity] The birth order of a mother's child.
+
+\item[childBirthdate] The birthdate of a mother's child.
+
+\item[gmIMR] Grandmother's infant mortality rate (per cent).
+
+\item[sex] The sex of a mother's child.
+
+\end{description}
+
+\end{frame}
+
+\begin{frame}{Descriptive statistics}
+  
+<<numbirth, fig.height = 5>>=
+par(cex.lab = 1.5, cex.axis = 1.5)
+oldpar = par(mfrow = c(2, 2))
+byear <- floor(ef$mBirthdate + ef$enter) + 1840
+x <- table(byear)
+years <- names(x)
+x <- x[-length(x)]
+years <- years[-length(years)]
+plot(years, as.numeric(x), type = "l", xlab = "Birth/Death year", ylab = "Frequency", col = "blue", ylim = c(0, 1500), main = "Present data")
+dyear <- with(ef[ef$event, ], floor(mBirthdate + exit)) + 1840
+y <- table(dyear)
+years <- names(y)
+lines(years, as.numeric(y), type = "l", col = "red")
+abline(h = 0)
+text(1850, 130, "Deaths", col = "red")
+text(1825, 450, "Births", col = "blue")
+ss <- with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter))
+x <- perstat(ss, seq(1801,1901, by = 1), age = c(0, 1))
+plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l", 
+     ylim = c(0, 0.4), col = "blue")
+abline(h = 0)
+aver <- perstat(ss, seq(1801, 1901, by = 100), age = c(0, 1))$intensity
+abline(h = aver, col = "blue", lty = 2)
+## POPLINK:
+library(skum)
+per1 <- persons[persons$frsbobtyp == 2 & persons$region == "ske", c("foddat", "doddat")]
+per1$foddat <- as.numeric(tillTid(per1$foddat))
+per1$doddat <- as.numeric(tillTid(per1$doddat))
+per1 <- per1[!is.na(per1$foddat), ]
+per1$event <- with(per1, !is.na(doddat) & doddat - foddat <= 1)
+byear <- floor(per1$foddat)
+x <- table(byear)
+years <- as.numeric(names(x))
+x <- x[years < 1903]
+years <- years[years < 1903]
+plot(years, as.numeric(x), type = "l", col = "blue", xlim = c(1742, 1902),  ylab = "Frequency", xlab = "Birth/Death year", ylim = c(0, 1500), main = "POPLINK")
+dyear <- floor(per1$doddat[per1$event])
+y <- table(dyear)
+years <- as.numeric(names(y))
+y <- y[years < 1903]
+years <- years[years < 1903]
+
+lines(years, as.numeric(y), type = "l", col = "red")
+abline(h = 0)
+text(1850, 200, "Deaths", col = "red")
+text(1825, 700, "Births", col = "blue")
+ss <- with(obs, cbind(enter, exit, sluttyp == 2, birthdate))
+x <- perstat(ss, seq(1801, 1901, by = 1), age = c(0, 1))
+aver <- perstat(ss, seq(1801, 1901, by = 100), age = c(0, 1))$intensity
+plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "POPLINK", type = "l", 
+     ylim = c(0, 0.4), col = "blue")
+abline(h = 0)
+abline(h = aver, lty = 2, col = "blue")
+##plot(years, as.numeric(x) / as.numeric(y), xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l")
+par(oldpar)
+@
+
+\end{frame}
+
+\begin{frame}{More}
+  
+<<aggrfile>>=
+ef <- ef[ef$mBirthdate + 1840 > 1826 & ef$mBirthdate + 1840 < 1851, ]
+indx <- tapply(ef$MotherID, ef$MotherID)
+ef$mBirths <- with(ef, tapply(MotherID, MotherID, length)[indx])
+ef$mDeaths <- with(ef, tapply(event, MotherID, sum)[indx])
+ef$Mexpon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
+ef1 <- ef[!duplicated(ef$MotherID), ]
+##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
+@
+
+\begin{itemize}
+\item The \emp{average number of births to a mother} is 
+\emp{\Sexpr{round(NROW(ef) / length(unique(ef$MotherID)), 2)}}. 
+\item The corresponding number for a \emp{grandmother} is \emp{\Sexpr{round(mean(ef1$G0_Births), 2)}}, but 
+\item  keep in mind that \emp{grandmothers} are restricted to have \emp{at least two births}, while \emp{mothers} are restricted to have \emp{at least one birth}. 
+\end{itemize}
+
+\end{frame}  
+
+\begin{frame}{Mothers birth year and IMR}
+  
+<<sample, fig.height = 4.4>>=
+par(cex.lab = 1.5, cex.axis = 1.5)
+oldpar <- par(mfrow = c(1, 2))
+barplot(table(floor(ef1$mBirthdate + 1840)), xlab = "Year", main = "", 
+col = "lightblue",ylab = "Frequency")
+##abline(h = 0)
+
+## IMR:
+years <- seq(1845, 1895, by = 1)
+x <- perstat(with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter)), years, c(0, 1))
+plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality", col = "blue")
+par(oldpar)
+@
+  
+\end{frame}  
+
+\begin{frame}{Sister group sizes}
+  
+<<howmany>>=
+par(cex.lab = 1.5, cex.axis = 1.5)
+n.m <- nrow(ef1) # No. of mothers
+n.gm <- length(unique(ef1$GrandmotherID)) # No. of grandmothers
+x <- table(table(ef1$GrandmotherID)) # 'Mother siblings'
+@
+
+<<sibmoth, fig.height = 4>>=
+barplot(x, xlab = "Size", ylab = "Frequency")
+@
+
+\end{frame}  
+
+\begin{frame}{The Poisson model}
+
+The \emp{expected value} of the \emp{number of infant deaths $D_i$} for mother No. $i, \, i = 1, \ldots, n$, is modeled by a \emp{Poisson distribution} as 
+\begin{equation*}
+E(D_i) = R_i e^{\boldsymbol{\beta} \mathbf{x}_i},
+\end{equation*}
+
+where
+
+\begin{itemize}
+\item $R_i$ is \emp{total risk time} for mother No. $i$, 
+\item  $\mathbf{x}_i$ is a vector of her \emp{explanatory variables}, and 
+\item  $\boldsymbol{\beta}_i$ is the vector of \emp{regression coefficients}. 
+\end{itemize}
+
+  
+\end{frame}
+
+\begin{frame}{Poisson regression, statistical significance}
+  
+<<poisson>>=
+options(digits = 8)
+fit.p <- glm(mDeaths ~ offset(log(Mexpon)) + gmDeaths + gmBirths + mBirthdate, data = ef1, family = poisson)
+dr <- drop1(fit.p, test = "Chisq")
+@
+
+<<poisp, fig.height = 4.4>>=
+par(cex.lab = 1.5, cex.axis = 1.5)
+pv <- dr[[5]][-1]
+names(pv) <- c("gmDeaths", "gmBirths", "mBirthdate")
+xp <- sort(pv)
+n <- length(xp)
+mplin <- 1/(n:1) * 0.05
+plot(1:3, xp, type = "h", axes = FALSE, xlab = "Covariates", ylab = "p-value",
+     cex.lab = 1.5)
+points((1:3)[xp < mplin], xp[xp < mplin], col = "darkgreen", pch = 19, 
+       cex = 1.5)
+points((1:3)[xp >= mplin], xp[xp >= mplin], col = "red", pch = 18, cex = 1.5)
+axis(1, at = 1:n, labels = names(xp))
+axis(2, at = c(0, 0.05, 0.2), las = 1, labels = c("0", "5%", "20%"))
+box()
+abline(h = 0.05, col = "red", lty = 1)
+abline(h = 0)
+lines(1:3, 1 / (n:1) * 0.05, col = "magenta", lty = 2)
+##barplot(sort(pv))
+
+@
+  
+\end{frame}  
+
+\begin{frame}{Poisson regression, effects}
+
+<<poiseff, fig.height = 4.4>>=
+par(cex.lab = 1.5, cex.axis = 1.5)
+cat0 <- exp(fit.p$coef[1])
+cat1 <- exp(sum(fit.p$coef[1:2]))
+cat2 <- exp(sum(fit.p$coef[c(1, 3)]))
+oldpar <- par(mfrow = c(1, 2))
+##barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+  ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+
+barplot(100 * c(cat0, cat1, cat2), names.arg = c("0", "1", "2+"), 
+        ylim = c(0, 9), ylab = "IMR (per cent)", xlab = "gmDeaths",cex.lab = 1.5)
+cat0 <- exp(fit.p$coef[1])
+cat1 <- exp(sum(fit.p$coef[c(1, 4)]))
+cat2 <- exp(sum(fit.p$coef[c(1, 5)]))
+cat3 <- exp(sum(fit.p$coef[c(1, 6)]))
+
+##barplot(100 * ((c(cat1, cat2) - cat0)/ cat0), names.arg = c("1 GM death", "2+ GM deaths"), 
+  ##      ylim = c(0, 50), ylab = "Relative IMR (per cent)")
+
+barplot(100 * c(cat0, cat1, cat2, cat3), names.arg = c("2", "3", "4-6", "7+"), 
+    ylab = "IMR (per cent)", xlab = "gmBirths", cex.lab = 1.5)
+
+@
+  
+\end{frame}  
+
+\begin{frame}{Survival analysis}
+  
+\begin{itemize}
+\item Newborn infants are study objects.
+\item Their \emp{survival times} (up to age one) are studied.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Survival analysis, routine presentation}
+
+\scriptsize
+<<surv,results='asis'>>=
+##ef$G0InfD <- ef$G0_InfD_cat
+##ef$G0Births.c <- ef$G0_Births -
+##ef$mAge <- ef$enter - 32
+##ef$mAge2 <- (ef$mAge)^2
+##ef$mAge3 <- (ef$mAge)^3
+ef$mAge <- cut(ef$enter, c(seq(16.99, 43.99, by = 3), 49.99), labels = c("17-19", "20-22", "23-25", "26-28", "29-31", "32-34", "35-37", "38-40", "41-43", "44-49"))
+ef$childBirthdate <- ef$mBirthdate + ef$enter
+fit.c <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths + #childBirthdate + 
+                    ###strata(parity) + 
+                    mAge, data = ef)
+dr.c <- drop1(fit.c, test = "Chisq")
+ltx(fit.c, dr = dr.c, caption = "Cox regression, standard model.", 
+       label = "tab:surv", digits = 4)
+@
+  
+\end{frame}  
+
+\begin{frame}{Significance, Likelihood Ratio Tests}
+
+<<chisq, results='asis'>>=
+xtable(dr)
+@ 
+
+\vspace{\baselineskip}
+
+The only table you need!
+  
+\end{frame}
+
+\begin{frame}{``Graphical'' $p$-values}
+  
+<<siginv>>=
+par(cex.lab = 1.5, cex.axis = 1.5)
+p <- numeric(3)
+p[1] <- dr.c[[4]][2]
+p[2] <- dr.c[[4]][3]
+p[3] <- dr.c[[4]][4]
+##fit.cb <- coxreg(Surv(exit - enter, event) ~ gmDeaths + gmBirths, data = ef)
+##cstat <- 2 * (fit.c$loglik[2] - fit.cb$loglik[2])
+##p[3] <- pchisq(cstat, df = 2, lower.tail = FALSE)
+names(p) <- c("gmDeaths", "gmBirths", "mAge")
+p <- sort(p)
+mplin <- 1 / (n:1) * 0.05
+plot(1:3, p, type = "h", ylab = "p-value", xlab = "Covariates", axes = FALSE, ylim = c(0, 0.055))
+axis(1, at = 1:3, labels = names(p))
+axis(2, at = c(0, 0.05), labels = c("0", "5%"), las = 1)
+abline(h = 0.05, col = "red")
+points(1:3, p, col = "darkgreen", pch = 19, cex = 1.5)
+lines(1:3, mplin, lty = 2, col = "magenta")
+box()
+abline(h = 0)     
+@
+  
+\end{frame}
+
+\begin{frame}{Effect sizes}
+  
+<<effstcox, fig.cap = "Effects of included covariates, Cox regression. The leftmost value is the reference in all panels.", fig.height = 3.3>>=
+source("R/eff.R")
+par(cex.lab = 1.8, cex.axis = 1.5)
+oldpar <- par(mfrow = c(1, 3))
+sdp <- sqrt(diag(fit.c$var))
+##gmDeaths:
+eff.fact(fit.c$coef[1:2], sdp[1:2], labs = fit.c$levels[[1]], xlab = "No. of GM deaths")
+##c0 <- 0
+##c1 <- 100 * (exp(fit.c$coef[1]) - 1)
+##c2 <- 100 * (exp(fit.c$coef[2]) - 1)
+##barplot(c(c0, c1, c2), names.arg = c("0", "1", "2+"), main = "No. of GM deaths", ylab = "Rel. Risk ##increase (per cent)", ylim = c(0, 60))
+##gmBirths:
+eff.fact(fit.c$coef[3:5], sdp[3:5], labs = fit.c$levels[[2]], xlab = "No. of GM births")
+##c0 <- 0
+##c1 <- 100 * (exp(fit.c$coef[3]) - 1)
+##c2 <- 100 * (exp(fit.c$coef[4]) - 1)
+##c3 <- 100 * (exp(fit.c$coef[5]) - 1)
+##barplot(c(c0, c1, c2, c3), names.arg = c("2", "3", "4-6", "7+"), main = "No. of GM births", ylab = "Rel. ##Risk increase (per cent)", ylim = c(0, 60))
+## mAge:
+eff.fact(fit.c$coef[6:14], sdp[6:14], labs = fit.c$levels[[3]], xlab = "Mother's age")
+##x <- seq(20, 45, length = 25)
+##y <- exp(fit.c$coef[6] * (x - 32) + fit.c$coef[7] * (x - 32)^2) - 1
+##plot(x, 100 * y, xlab = "Age", type = "h", main = "Mother's age", ylab = "Rel. Risk increase (per cent)", ##axes = FALSE, ylim = c(0, 60))
+##axis(1, at = c(20, 25, 32, 40, 45))
+##axis(2)
+##box()
+##abline(h = 0)
+par(oldpar)
+@
+
+\end{frame}
+
+\end{document}
