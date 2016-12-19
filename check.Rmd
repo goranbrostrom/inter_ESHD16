@@ -1,0 +1,28 @@
+---
+title: "Check of raw data"
+author: "Göran Broström"
+date: "December 19, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data from scratch
+
+First we read data, from IDS and from the created data file.
+```{r readin}
+load("ef.rda")
+source("R/read_IDS.R")
+individual <- read_IDS()
+```
+
+Then we check the amount of information for each individual in IDS, present in *ef*.
+```{r checkin}
+id <- unique(ef$Id_I)
+indiv <- individual[individual$Id_I %in% id, ]
+xx <- with(indiv, tapply(Id_I, Id_I, length))
+table(xx)
+```
+
