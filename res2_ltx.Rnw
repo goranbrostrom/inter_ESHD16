@@ -40,13 +40,24 @@ library(xtable)
 
 \section{Introduction}
 
-This article has a threefold aim, including two methodological objectives and one demographic query. The first methodological aim is to assess the power of the IDS data format for demographic analysis. An evaluation of the data in applied research will be useful for further development of the IDS structure and for its future use in comparative research. The second methodological objective is to evaluate and compare different models for statistical analysis, in this case of inter-generational transfers. The third purpose is to apply the IDS-structure and the statistical modelling in a demographic study of a possible inter-generational transmission of mortality in infancy. 
+This article has a threefold aim, including two methodological objectives
+and one demographic query. The first methodological aim is to assess the
+power of the IDS data format for demographic analysis. An evaluation of the
+data in applied research will be useful for further development of the IDS
+structure and for its future use in comparative research. The second
+methodological objective is to evaluate and compare different models for
+statistical analysis, in this case of inter-generational transfers. The
+third purpose is to apply the IDS-structure and the statistical modelling
+in a demographic study of a possible inter-generational transmission of
+mortality in infancy.  
 
 For more than 25 years it has been observed in numerous studies of
 historical and contemporary populations that infant deaths seem to be
 clustered into high-risk families. In a study of infant mortality in two
 regions in 19th century Sweden, Skellefteå and Sundsvall, \citet{ebrb05}
-found that infant deaths were not uniformly distributed; more families than expected had no infant death or two or more infant deaths.  Despite the fact that infant
+found that infant deaths were not uniformly distributed; more families than
+expected had no infant death or two or more infant deaths.  Despite the
+fact that infant 
 mortality rates shifted over time, from about 200 per thousand in the
 beginning of the 
 nineteenth century to approximately 100 per thousand in the 1890s, most
@@ -54,7 +65,10 @@ families never
 experienced an infant death.  Today there seems to be
 consensus that the non-uniform distribution of infant deaths among families is a
 complex interplay of different factors, difficult to identify
-and separate.  The observed family dependency has led to an increased attention to a possible inter-generational transmission of demographic patterns \citep{edja12}, sometimes even considering epigenetic effects \citep{pem14}.
+and separate.  The observed family dependency has led to an increased
+attention to a possible inter-generational transmission of demographic
+patterns \citep{edja12}, sometimes even considering epigenetic effects
+\citep{pem14}. 
 
 Although the clustering of infant mortality appears to be a salient
 phenomenon throughout history, there are also major regional differences in
@@ -77,7 +91,8 @@ discussed by \citet{hb12}.
 
 \section{Area}
 
-The area under study is the 19th century Skellefteå region in the province of
+The area under study is the 19th century Skellefteå region in the province
+of 
 Västerbotten in the northern part of Sweden. At the outset of the study it consisted of one large rural parish, Skellefteå. By 1900 three new parishes had been detached into separate units, but their populations are still included in the study until 1900.  The region was large, both in terms of
 area and of population. With an area of about 1700 square miles,
 Skellefteå was considerably larger than most rural parishes in Sweden. It
@@ -86,7 +101,7 @@ southern border, and a ride from the coast to the more remote and sparsely
 populated parts of the parish in the west could take even longer,
 especially in wintertime. The main part of the population was, however,
 concentrated in the coastal area and in river valleys.  In the early 19th
-century the population was around 6900, and it increased rapidly during the
+century the population size was around 6900, and it increased rapidly during the
 first half of the century. By 1850 it had reached to about 17\,000 and at the
 turn of the century it had further doubled. Despite the large increase in
 population, which was mainly the result of a high natural growth, the
@@ -271,7 +286,7 @@ plot(1801:1900, x$intensity, xlab = "year", ylab = "Infant mortality", main = "P
      ylim = c(0, 0.4), col = "blue")
 abline(h = 0)
 abline(h = aver, lty = 2, col = "blue")
-##plot(years, as.numeric(x) / as.numeric(y), xlab = "year", ylab = "Infant mortality", main = "Present data", type = "l")
+##plot(years, as.numeric(x) / as.numeric(y), xlab = "year", ylab = "Infant mortality", main = "Present data, IMR", type = "l")
 par(oldpar)
 @
 
@@ -316,7 +331,7 @@ col = "lightblue",ylab = "Frequency")
 ## IMR:
 years <- seq(1845, 1895, by = 1)
 x <- perstat(with(ef, cbind(0, exit - enter, event, mBirthdate + 1840 + enter)), years, c(0, 1))
-plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality", col = "blue")
+plot(years[-1], x$intensity, type = "b", xlab = "Year", ylab = "Infant mortality", col = "blue", ylim = c(0, 0.2))
 par(oldpar)
 @
 
