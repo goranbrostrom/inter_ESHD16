@@ -7,7 +7,9 @@ output:
   html_document: default
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, cache = FALSE}
+library(dplyr)
+library(knitr)
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
@@ -65,4 +67,48 @@ Almost 80 years of information $\ldots$. What are the different possible values 
 sort(unique(indiv$Type))
 ```
 
+
+## Dates
+
+Let's fix dates in more readable form.
+
+```{r dates}
+datum <- with(indiv, paste(Year, Month, Day, sep = "-"))
+indiv$datum <- as.Date(datum, format = "%Y-%m-%d")
+datum <- with(indiv, paste(Start_year, Start_month, Start_day, sep = "-"))
+indiv$enter <- as.Date(datum, format = "%Y-%m-%d")
+datum <- with(indiv, paste(End_year, End_month, End_day, sep = "-"))
+indiv$exit <- as.Date(datum, format = "%Y-%m-%d")
+indiv <- select(indiv, Id_I, Type, Value, datum, enter, exit)
+indiv <- filter(indiv, !(Type %in% c("BAPTISM_LOCATION", "CHILDBIRTH_ASSISTANT",
+                                     "FUNERAL_DATE", "FUNERAL_LOCATION",
+                                     "MARRIAGE_LOCATION", "VACCINATION")))
+indiv <- filter(indiv, !(Type %in% c("OCCUPATION", "OCCUPATION_HISCO")))
+kable(head(indiv))
+anydate <- indiv$datum
+omiss <- is.na(anydate)
+anydate[omiss] <- indiv$exit[omiss]
+indiv$anydate <- anydate
+rm(anydate)
+length(unique(indiv$Id_I))
+indiv <- filter(indiv, !is.na(anydate))
+length(unique(indiv$Id_I))
+```
+
+We remove rows with *Type == "BAPTISM_DATE", "BIRTH_LOCATION", "DEATH_LOCATION*
+
+```{r removemore}
+indiv <- filter(indiv, !(Type %in% c("BAPTISM_DATE", "BIRTH_LOCATION", "DEATH_LOCATION")))
+with(indiv, table(Type))
+```
+
+Now we check the min and max date for each person.
+
+```{r minmax}
+mind <- with(indiv, tapply(anydate, Id_I, min))
+maxd <- with(indiv, tapply(anydate, Id_I, max))
+wox <- data.frame(first = as.Date(mind, origin = "1970-01-01"), 
+                  last = as.Date(maxd, origin = "1970-01-01"),
+                  age = (maxd - mind) / 365.2425)
+```
 
