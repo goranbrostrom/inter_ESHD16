@@ -2,7 +2,7 @@
 title: "Models for intergenerational transmissions in infant mortality"
 author: "Göran Broström"
 date: "August 15, 2016"
-output: pdf_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE} 
@@ -130,7 +130,7 @@ I guess that it is clear how this data set is constructed.
 It looks like this (first ten lines):
 
 ```{r lookslike}
-knitr::kable(head(dat[, c("m.id", "m.birthdate", "m.birthdate.c", "parity", "enter", "exit", "event", "gm.deaths")], 10))
+knitr::kable(head(dat[, c("m.id", "m.birthdate", "m.birthdate.c", "parity", "enter", "exit", "event", "gm.deaths")], 10), format = "pandoc", caption = "Hej")
 ```
 
 *m.birthdate.c* is a centered (around 1 Jan 1850) version of Mother's birthdate *m.birthdate*, this is changed from the earlier version so t will be easier to explain. (It is a good habit to center covariates; the advantage shows up in *interactions*.) *enter* is mother's age at delivery, and *exit* is the age of mother at the death of the infant if it happens before age 1, $enter + 1$ otherwise. *event* indicates an infant death.
