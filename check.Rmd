@@ -1,12 +1,14 @@
 ---
-title: "Check of raw data"
+title: "Check of raw data in IDS"
 author: "Göran Broström"
-date: "December 19, 2016"
-output: html_document
+date: "December 22, 2016"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
 ## Data from scratch
@@ -25,4 +27,42 @@ indiv <- individual[individual$Id_I %in% id, ]
 xx <- with(indiv, tapply(Id_I, Id_I, length))
 table(xx)
 ```
+OK, this is a little difficult to interpret, let's look at them in *skum*.
+
+```{r inskum}
+library(skum)
+oj <- obs[obs$id %in% id, ]
+length(unique(oj$id))
+dim(oj)
+```
+Hmm, no connection between *id* in *observation* and *Id_I* in IDS-data. We have to go back to IDS.
+We start by noting that rows without any date can safely be discarded.
+
+```{r dateweq}
+oo <- rowSums(indiv[, 8:16])
+indiv <- indiv[oo > 0.5, ]
+xx <- with(indiv, tapply(Id_I, Id_I, length))
+table(xx)
+```
+
+This tells us that four individuals had three notations in the IDS (modified), nine had four, etc. The guys with three (selected columns):
+
+```{r guysthree}
+idi <- names(xx[xx == 3])
+indiv[indiv$Id_I %in% idi, c("Id_I", "Type", "Value", "Day", "Month", "Year")]
+```
+
+Obviously only "birth" information. In contrast, the guy with 170 notations (watch up, several pages!):
+
+```{r guysmany}
+idi <- names(xx[xx == 170])
+indiv[indiv$Id_I %in% idi, c("Id_I", "Type", "Value", "Day", "Month", "Year")]
+```
+
+Almost 80 years of information $\ldots$. What are the different possible values of *Type*?
+
+```{r type}
+sort(unique(indiv$Type))
+```
+
 
