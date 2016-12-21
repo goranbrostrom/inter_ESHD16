@@ -1,6 +1,6 @@
 eff.cont <- function(yp, sdyp, from, to){
     ## 'fit' is a result from a glm.
-    
+
     x <- seq(from, to, length = 1000)
     y <- yp * x
     y.upp <- y + 1.96 * sdyp * abs(x)
@@ -13,7 +13,8 @@ eff.cont <- function(yp, sdyp, from, to){
     invisible(exp(y.low))
 }
 
-eff.fact <- function(yp, sdyp, labs, main = "", xlab = "Levels", ci = FALSE){
+eff.fact <- function(yp, sdyp, labs, main = "", las = 1, xlab = "Levels",
+                     ci = FALSE){
     ## 'yp' is a vector of level estimates, sdyp their se's.
     y <- exp(c(0, yp))
     n <- length(y)
@@ -26,13 +27,13 @@ eff.fact <- function(yp, sdyp, labs, main = "", xlab = "Levels", ci = FALSE){
     }
     plot(1:n, y, type = "b", col = "blue", ylim = ylims, axes = FALSE,
          xlab = xlab, ylab = "Rel. Risk", main = main)
-    axis(1, at = 1:n, labels = labs)
+    axis(1, at = 1:n, labels = labs, las = las)
     axis(2)
     box()
     if (ci){
         lines(1:n, y.upp, type = "b", lty = 2, pch = "-")
         lines(1:n, y.low, type = "l", lty = 2)
-   
+
         for (i in 2:n){
             lines(c(i, i), c(y.low[i], y.upp[i]), lty = 2)
         }
