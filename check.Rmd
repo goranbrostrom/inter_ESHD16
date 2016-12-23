@@ -115,5 +115,8 @@ wox$birthYear <- wox$first %>%
     as.character() %>% 
     substr(1, 4) %>% 
     as.numeric()
+id <- indiv$Id_I[indiv$Type == "DEATH_DATE"]
+##wox$death <- FALSE
+wox$death <- wox$id %in% id
 ```
 
