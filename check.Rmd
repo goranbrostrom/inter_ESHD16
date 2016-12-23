@@ -107,8 +107,13 @@ Now we check the min and max date for each person.
 ```{r minmax}
 mind <- with(indiv, tapply(anydate, Id_I, min))
 maxd <- with(indiv, tapply(anydate, Id_I, max))
-wox <- data.frame(first = as.Date(mind, origin = "1970-01-01"), 
+wox <- data.frame(id = names(maxd),
+                  first = as.Date(mind, origin = "1970-01-01"), 
                   last = as.Date(maxd, origin = "1970-01-01"),
                   age = (maxd - mind) / 365.2425)
+wox$birthYear <- wox$first %>% 
+    as.character() %>% 
+    substr(1, 4) %>% 
+    as.numeric()
 ```
 
