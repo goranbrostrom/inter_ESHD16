@@ -17,7 +17,9 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 First we read data, from IDS and from the created data file.
 ```{r readin}
-load("ef.rda")
+load("ef_fixed.rda")
+ef <- ef_fixed
+rm(ef_fixed)
 source("R/read_IDS.R")
 individual <- read_IDS()
 ```
