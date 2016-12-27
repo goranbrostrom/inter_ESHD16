@@ -318,6 +318,9 @@ ef$mDeaths <- with(ef, tapply(event, MotherID, sum)[indx])
 ef$Mexpon <- with(ef, tapply(exit - enter, MotherID, sum)[indx])
 ef1 <- ef[!duplicated(ef$MotherID), ]
 ##kable(summary(ef1[, c("M_Births", "M_Deaths", "G0_Births", "G0_InfD_cat")]))
+ef_fixed <- ef
+save(ef_fixed, file = "ef_fixed.rda")
+rm(ef_fixed)
 @
 
 \subsection*{The covered time period}
